@@ -1,6 +1,6 @@
 {
   "name": "gridthings-cli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Command line tools for accessing gridthings servers",
   "main": "index.js",
   "directories": {
