@@ -20,8 +20,15 @@
   "bin": {
     "gtcli": "./index.js",
     "gtcli-software": "./sw.js",
-    "gtcli-software-install": "./sw-install.js",
+    "gtcli-software-push": "./sw-push.js",
     "gtcli-software-show": "./sw-show.js",
+    "gtcli-software-list": "./sw-list.js",
+    "gtcli-software-publish": "./sw-publish.js",
+    "gtcli-software-delete": "./sw-delete.js",
+    "gtcli-software-reload": "./sw-reload.js",
+    "gtcli-software-activate": "./sw-activate.js",
+    "gtcli-software-deactivate": "./sw-deactivate.js",
+    "gtcli-software-uninstall": "./sw-uninstall.js",
     "gtcli-devices": "./devices.js"
   },
   "bugs": {
@@ -32,7 +39,10 @@
     "mocha": "^3.5.0"
   },
   "dependencies": {
+    "coap": "^0.21.0",
     "commander": "^2.11.0",
+    "hashids": "^1.1.1",
+    "mongodb": "^2.2.31",
     "pem": "^1.9.7",
     "superagent": "^3.6.0"
   }
