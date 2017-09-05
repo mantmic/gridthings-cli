@@ -19,7 +19,7 @@ program
       }
       else
       {
-        console.log(response.status + " " + response.text);
+        console.log(response.code);
       }
     })
   })
