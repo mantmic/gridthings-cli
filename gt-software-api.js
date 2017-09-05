@@ -16,6 +16,7 @@ exports.reload_packages = function(server, resolve, reject)
   request.pathname = "/packages/reload";
   console.log("PUT " + make_software_url(server));
   var req = coap.request(request).on('response', function(response) {
-    resolve(response);
+    if (response.code < 4.00) resolve(response);
+    else reject(response);
   }).end();
 }

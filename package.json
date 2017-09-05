@@ -29,7 +29,13 @@
     "gtcli-software-activate": "./sw-activate.js",
     "gtcli-software-deactivate": "./sw-deactivate.js",
     "gtcli-software-uninstall": "./sw-uninstall.js",
-    "gtcli-devices": "./devices.js"
+    "gtcli-devices": "./devices.js",
+    "gtcli-ssn": "./ssn.js",
+    "gtcli-ssn-add": "./ssn-add.js",
+    "gtcli-ssn-remove": "./ssn-remove.js",
+    "gtcli-ssn-list": "./ssn-list.js",
+    "gtcli-ssn-reload": "./ssn-reload.js",
+    "gtcli-ssn-poll": "./ssn-poll.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"

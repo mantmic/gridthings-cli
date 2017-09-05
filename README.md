@@ -3,7 +3,13 @@ Command line tools for working with the Gridthings Server
 
 https://developer.atlassian.com/blog/2015/11/scripting-with-node/
 
+To Isntall:
+
 > sudo npm install -g
+
+For development you will want to link to the files in this repo so that when they change the cli is 
+updated
+
 > sudo npm link
 
 
@@ -13,7 +19,7 @@ https://developer.atlassian.com/blog/2015/11/scripting-with-node/
 
 ## Add a new server
 
-For the CLI tool to access a server it must have access to the server'd client certificate, key and the ca certifcate. This is done by putting 
+For the CLI tool to access a server it must have access to the server's client certificate, key and the ca certifcate. This is done by putting 
 these files into the ~/.gtcli directory under a folder named with the servers base host name.
 
 Copy the certificates from the server to ~/.gtcli

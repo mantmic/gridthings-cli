@@ -2,10 +2,11 @@
 
 var program = require('commander');
 program
- .description('Command line tool for managing GridThings devices.' + 
+ .description('Command line tool for managing GridThings devices and services.' + 
   '\n  ' +
-  '\n  To access the server you must have a client certificate for your server in ~/.gtcli/' + 
+  '\n  To access Gridthings Edge services you must have a client certificate for your instance in ~/.gtcli/' + 
   '\n  ')
  .command('software', 'Manage the software packages installed on a device')
- .command('devices', 'List the devices attacvhed to your server')
+ .command('devices', 'List the devices attached to your Gridthings Edge services')
+ .command('ssn', 'Configure SSN endpoints managed by your Gridthings Edge services')
  .parse(process.argv);

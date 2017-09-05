@@ -4,7 +4,8 @@ var request = require('superagent');
 const os = require('os');
 var fs = require("fs");
 var gtswp = require('./gt-software-package.js');
-var gtsws = require('./gt-software-api.js')
+var gtsws = require('./gt-software-api.js');
+var gtssn = require('./gt-ssn-api.js')
 exports.log_level = 0;
 
 //FIXME: need to remove this when we work out how to get superagent to use the supplied ca certificate
@@ -210,6 +211,25 @@ exports.config_put = function(path, body, server, resolve, reject)
     reject(e);
   }
 }
+
+exports.config_post = function(path, body, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_config_url(path, server);
+    log_debug("POST " + url);
+    request.post(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
+      if (error) reject(error);
+      else resolve(response);
+    });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
 exports.config_get = function(path, query, server, resolve, reject)
 {
   try
@@ -247,16 +267,93 @@ exports.config_delete = function(path, query, server, resolve, reject)
     reject(e);
   }
 }
-
+////////////////////////////////////////////////////
 exports.ssn_list_endpoints = function(server, resolve, reject)
 {
   exports.config_get("ssn-proxy-endpoints-1", "", server, 
-    resolve,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        //console.log(JSON.stringify(contents._embedded)); 
+        var endpoints = [];
+        for (var ep = 0; ep < contents._embedded.length; ep++)
+        {
+          if (!contents._embedded[ep]._id["$oid"])
+          {
+            endpoints.push(contents._embedded[ep]._id)
+          }
+        }
+        resolve(endpoints);
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
     function(error){ 
       if (reject) reject(error);
       else log_error("listing software packages", error); 
     });
 }
+
+exports.ssn_add_endpoint = function(urn, server, resolve, reject)
+{
+  if ((urn === "") || (urn == null))
+  {
+    log_error("adding ssn endpoint", "invalid urn");
+    if (reject) reject("invalid urn");
+  }
+
+  log_debug("adding " + urn);
+ 
+  exports.config_put(
+    "ssn-proxy-endpoints-1/" + urn, 
+    null, 
+    server, 
+    resolve,
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("adding ssn endpoint", error); 
+    });
+}
+
+exports.ssn_remove_endpoint = function(urn, server, resolve, reject)
+{
+  if ((urn === "") || (urn == null))
+  {
+    log_error("removing ssn endpoint", "invalid urn");
+    if (reject) reject("invalid urn");
+  }
+
+  exports.config_delete("ssn-proxy-endpoints-1/"+urn, "", server, 
+    resolve,
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("removing ssn endpoint", error); 
+    });
+}
+
+exports.ssn_reload_endpoints = function(server, resolve, reject)
+{
+  gtssn.reload_endpoints(server, 
+    resolve,
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("reloading ssn endpoints", error.code); 
+    });
+}
+
+exports.ssn_poll_endpoint = function(urn, server, resolve, reject)
+{
+  gtssn.poll_endpoint(urn, server, 
+    resolve,
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("polling ssn endpoint", error.code); 
+    });
+}
+
 
 ////////////////////////////////////////////////////
 exports.update_state_to_string = function(us)
@@ -337,7 +434,7 @@ exports.software_list_packages = function(server, resolve, reject)
 exports.software_publish_package = function(package_name, server, resolve, reject)
 {
   var package = gtswp.load(package_name);
-  console.log("publishing " + package.toString());
+  log_debug("publishing " + package.toString());
   var bindata = new require('mongodb').Binary(package.data);
   exports.config_put(
     "packages/" + package.hashid, 
@@ -366,7 +463,7 @@ exports.software_reload_packages = function(server, resolve, reject)
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("fetching software resources", error); 
+      else log_error("reloading software resources", error.code); 
     });
 }
 
