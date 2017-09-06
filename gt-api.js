@@ -483,7 +483,7 @@ exports.software_deactivate = function(slot, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 0)
       { //no package

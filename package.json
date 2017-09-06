@@ -35,7 +35,8 @@
     "gtcli-ssn-remove": "./ssn-remove.js",
     "gtcli-ssn-list": "./ssn-list.js",
     "gtcli-ssn-reload": "./ssn-reload.js",
-    "gtcli-ssn-poll": "./ssn-poll.js"
+    "gtcli-ssn-poll": "./ssn-poll.js",
+    "gtcli-ssn-delete-sessions": "./ssn-delete-sessions.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
@@ -45,6 +46,7 @@
     "mocha": "^3.5.0"
   },
   "dependencies": {
+    "async": "^2.5.0",
     "coap": "^0.21.0",
     "commander": "^2.11.0",
     "hashids": "^1.1.1",
