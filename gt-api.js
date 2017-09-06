@@ -274,6 +274,7 @@ exports.ssn_list_endpoints = function(server, resolve, reject)
     function(response) {
       try
       {
+        
         var contents = JSON.parse(response.text);
         //console.log(JSON.stringify(contents._embedded)); 
         var endpoints = [];
@@ -281,7 +282,7 @@ exports.ssn_list_endpoints = function(server, resolve, reject)
         {
           if (!contents._embedded[ep]._id["$oid"])
           {
-            endpoints.push(contents._embedded[ep]._id)
+            endpoints.push(contents._embedded[ep]._id);
           }
         }
         resolve(endpoints);
