@@ -9,4 +9,5 @@ program
  .command('software', 'Manage the software packages installed on a device')
  .command('devices', 'List the devices attached to your Gridthings Edge services')
  .command('ssn', 'Configure SSN endpoints managed by your Gridthings Edge services')
+ .command('history', 'Retrieve the history for an LWM2M resources')
  .parse(process.argv);

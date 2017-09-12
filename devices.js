@@ -9,7 +9,7 @@ program
   .arguments('<server>')
   .option('-v, --verbose', 'Be verbose')
   .action(function(server) {
-    gtapi.log_level = 0;//program.verbose;
+    gtapi.log_level = 1;//program.verbose;
     print_json = false;
     gtapi.list_devices(server, function(response){
       

@@ -183,7 +183,7 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
   }
 }
 
-function config_add_query(q)
+function add_query(q)
 {
   var str_q = q.length != 0 ? "?" : "";
   for (var i = 0; i < q.length; i++)
@@ -236,7 +236,7 @@ exports.config_get = function(path, query, server, resolve, reject)
   {
     var certs = get_certs(server);
     var url = make_config_url(path, server);
-    url += config_add_query(query);
+    url += add_query(query);
     log_debug("GET " + url);
     request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
       if (error) reject(error);
@@ -255,7 +255,7 @@ exports.config_delete = function(path, query, server, resolve, reject)
   {
     var certs = get_certs(server);
     var url = make_config_url(path, server);
-    url += config_add_query(query);
+    url += add_query(query);
     log_debug("DELETE " + url);
     request.delete(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
       if (error) reject(error);
@@ -267,6 +267,90 @@ exports.config_delete = function(path, query, server, resolve, reject)
     reject(e);
   }
 }
+
+
+
+function make_history_url(path, server)
+{
+  return "https://history." + server + "" + path;
+}
+
+
+exports.history_get = function(path, query, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_history_url(path, server);
+    url += add_query(query);
+    log_debug("GET " + url);
+    request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
+      if (error) reject(error);
+      else resolve(response);
+    });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
+
+
+function history_get_newest(newest)
+{
+  if (newest == 'now') return new Date().toISOString();
+  else return newest;
+}
+
+
+function history_get_oldest(newest, oldest)
+{
+  var newest = history_get_newest(newest);
+  var newest_date = new Date(newest);
+
+  var period = parseInt(oldest, 10);
+  if (period != NaN) 
+  {
+     return new Date(newest_date.getTime() - (1000 * period)).toISOString();
+  }
+ 
+  return new Date(oldest).toISOString();
+}
+
+////////////////////////////////////////////////////
+//
+// gets the history for the specified resource from newest for period seconds 
+exports.history_get_for_resource = function(endpoint, resource, newest, oldest, server, resolve, reject)
+{
+  //http://127.0.0.1:3000/values?endpoint=eq.testlwm2mclient&uri_path=like.3/0/7/*&timestamp=gte.2017-07-18&timestamp=lt.2017-07-19&select=timestamp,value&order=timestamp.asc' | 
+
+  var q = [];
+  q.push("endpoint=eq." + endpoint);
+  q.push("uri_path=eq." + resource);
+  q.push("timestamp=gte." + history_get_oldest(newest, oldest));
+  q.push("timestamp=lte." + history_get_newest(newest));
+  q.push("select=uri_path,timestamp,value");
+  q.push("order=timestamp.asc");
+
+  exports.history_get("/values", q, server, 
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        resolve(contents);
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("getting history", error); 
+    });
+}
+
 ////////////////////////////////////////////////////
 exports.ssn_list_endpoints = function(server, resolve, reject)
 {
@@ -688,6 +772,6 @@ exports.list_devices = function(server, resolve, reject)
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("fetching software resources", error); 
+      else log_error("listing devices", error); 
     });
 }
