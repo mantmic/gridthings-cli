@@ -2,10 +2,12 @@ var coap = require('coap');
 var URL = require('url');
 var Agent = require('./node_modules/coap/lib/agent.js');
 var async = require('async');
+const os = require('os');
+var defaults = require('./defaults.js');
 
 function make_ssn_url(server)
 {
-  return "coap://" + server + ":5883/";
+  return "coap://" + defaults.check_server_name(server) + ":5883/";
 }
 
 //The Internet Assigned Numbers Authority (IANA) suggests the range 49152 to 65535 (215+214 to 216−1) for dynamic or private ports. 

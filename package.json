@@ -38,7 +38,8 @@
     "gtcli-ssn-poll": "./ssn-poll.js",
     "gtcli-ssn-delete-sessions": "./ssn-delete-sessions.js",
     "gtcli-history": "./history.js",
-    "gtcli-history-get": "./history-get.js"
+    "gtcli-history-get": "./history-get.js",
+    "gtcli-stream": "./stream.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
@@ -49,12 +50,15 @@
   },
   "dependencies": {
     "async": "^2.5.0",
+    "aws-sdk": "^2.118.0",
     "coap": "^0.21.0",
     "commander": "^2.11.0",
     "hashids": "^1.1.1",
+    "kinesis-streams": "^0.7.0",
     "mongodb": "^2.2.31",
     "pem": "^1.9.7",
     "postgrest-client": "^1.1.2",
-    "superagent": "^3.6.0"
+    "superagent": "^3.6.0",
+    "winston": "^2.3.1"
   }
 }

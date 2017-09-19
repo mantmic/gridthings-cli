@@ -6,16 +6,18 @@ var fs = require("fs");
 var gtswp = require('./gt-software-package.js');
 var gtsws = require('./gt-software-api.js');
 var gtssn = require('./gt-ssn-api.js')
+var defaults = require('./defaults.js');
+
 exports.log_level = 0;
-
-//FIXME: need to remove this when we work out how to get superagent to use the supplied ca certificate
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
-
-
 function log_debug(str)
 {
   if (exports.log_level > 0) console.log(str);
 }
+
+
+//FIXME: need to remove this when we work out how to get superagent to use the supplied ca certificate password
+process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
+
 
 // {
 //   "status":404,
@@ -78,17 +80,18 @@ function gt_cli_path(file)
 
 function make_core_url(server)
 {
-  return "https://core." + server + "/api/clients";
+  
+  return "https://core." + defaults.check_server_name(server) + "/api/clients";
 }
 
 function make_config_url(path, server)
 {
-  return "https://config." + server + "/gtedge/" + path;
+  return "https://config." + defaults.check_server_name(server)  + "/gtedge/" + path;
 }
 
 function make_client_url(path, urn, server)
 {
-  var url = make_core_url(server) ;
+  var url = make_core_url(defaults.check_server_name(server));
   if (urn != "") 
   {
     url += "/" + urn;
@@ -100,10 +103,10 @@ function make_client_url(path, urn, server)
   return url;
 }
 
-
 var server_certs = {};
 function get_certs(server)
 {
+  server = defaults.check_server_name(server);
   if (server in server_certs)
   {
     return server_certs[server];
@@ -116,7 +119,9 @@ function get_certs(server)
   return server_certs[server];
 }
 
-
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 exports.core_get = function(path, urn, server, resolve, reject)
 {
   try
@@ -764,7 +769,6 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
   }, reject);
  
 }
-
 
 exports.list_devices = function(server, resolve, reject)
 {

@@ -1,8 +1,11 @@
 var coap = require('coap');
+const os = require('os');
+var defaults = require('./defaults.js');
+
 
 function make_software_url(server)
 {
-  return "coap://" + server + ":5433/packages/reload";
+  return "coap://" + defaults.check_server_name(server) + ":5433/packages/reload";
 }
 
 exports.reload_packages = function(server, resolve, reject)
