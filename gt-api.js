@@ -4,8 +4,6 @@ var request = require('superagent');
 const os = require('os');
 var fs = require("fs");
 var gtswp = require('./gt-software-package.js');
-var gtsws = require('./gt-software-api.js');
-var gtssn = require('./gt-ssn-api.js')
 var defaults = require('./defaults.js');
 
 exports.log_level = 0;
@@ -80,8 +78,12 @@ function gt_cli_path(file)
 
 function make_core_url(server)
 {
-  
   return "https://core." + defaults.check_server_name(server) + "/api/clients";
+}
+
+function make_coap_url(path, server)
+{
+  return "https://coap." + defaults.check_server_name(server) + "/" + path;
 }
 
 function make_config_url(path, server)
@@ -164,6 +166,7 @@ exports.core_exec= function(path, body, urn, server, resolve, reject)
   }
 }
 
+
 exports.core_put= function(path, body, urn, server, resolve, reject)
 {
   try
@@ -199,6 +202,51 @@ function add_query(q)
   return str_q;
 }
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+exports.coap_put = function(path, body, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_coap_url(path, server);
+    log_debug("PUT " + url);
+    request.put(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
+      if (error) reject(error);
+      else resolve(response);
+    });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
+exports.coap_post = function(path, body, query, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_coap_url(path, server);
+    url += add_query(query);
+
+    log_debug("POST " + url);
+    request.post(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
+      if (error) reject(error);
+      else resolve(response);
+    });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+/////////////////////////////////////////////////////////////////////////////////////////////////////
 exports.config_put = function(path, body, server, resolve, reject)
 {
   try
@@ -426,21 +474,21 @@ exports.ssn_remove_endpoint = function(urn, server, resolve, reject)
 
 exports.ssn_reload_endpoints = function(server, resolve, reject)
 {
-  gtssn.reload_endpoints(server, 
+  exports.coap_put("ssn/reload", {}, server,
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("reloading ssn endpoints", error.code); 
+      else log_error("reloading ssn endpoints", error); 
     });
 }
 
 exports.ssn_poll_endpoint = function(urn, server, resolve, reject)
 {
-  gtssn.poll_endpoint(urn, server, 
+  exports.coap_post("ssn/poll", {}, ["urn=" + urn], server,
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("polling ssn endpoint", error.code); 
+      else log_error("polling ssn endpoint", error); 
     });
 }
 
@@ -549,7 +597,7 @@ exports.software_get = function(urn, server, resolve, reject)
 
 exports.software_reload_packages = function(server, resolve, reject)
 {
-  gtsws.reload_packages(server, 
+  exports.coap_put("software/reload", {}, server,
     resolve,
     function(error){ 
       if (reject) reject(error);
