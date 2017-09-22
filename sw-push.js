@@ -12,7 +12,7 @@ program
     console.log('pushing %s to slot %s on device %s via %s', package, slot , urn, server);
 
     gtapi.software_push(slot, package, urn, server, function(response){
-      console.log(JSON.stringify(response));
+      console.log(JSON.stringify(response, null, 2));
     });
   })
   .parse(process.argv);

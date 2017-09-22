@@ -28,7 +28,7 @@ program
     { 
       if (print_json)
       {
-        console.log(JSON.stringify(response));
+        console.log(JSON.stringify(response, null, 2));
       }
       else
       {

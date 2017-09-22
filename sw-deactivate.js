@@ -10,7 +10,7 @@ program
 
     gtapi.software_deactivate(slot, urn, server, function(response)
     {
-      console.log(JSON.stringify(response));
+      console.log(JSON.stringify(response, null, 2));
     });
   })
   .parse(process.argv);

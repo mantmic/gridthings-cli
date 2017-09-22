@@ -19,15 +19,16 @@ var gtapi = require('./gt-api.js');
 program
   .arguments('<server>')
   .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
   .action(function(server) {
-    gtapi.log_level = 1;//program.verbose;
-    print_json = true;
+    if (program.verbose) gtapi.log_level = 1;
+    print_json = program.json;
 
     gtapi.ssn_list_endpoints(server, function(endpoints)
     {
       if (print_json)
       {
-        console.log(JSON.stringify(endpoints));
+        console.log(JSON.stringify(endpoints, null, 2));
       }
       else
       {

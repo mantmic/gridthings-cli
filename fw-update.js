@@ -10,7 +10,7 @@ program
 
     gtapi.software_activate(slot, urn, server, function(response)
     {
-      console.log(JSON.stringify(response, null, 2));
+      console.log(JSON.stringify(response));
     });
   })
   .parse(process.argv);

@@ -12,7 +12,6 @@ function log_debug(str)
   if (exports.log_level > 0) console.log(str);
 }
 
-
 //FIXME: need to remove this when we work out how to get superagent to use the supplied ca certificate password
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
@@ -601,7 +600,7 @@ exports.software_reload_packages = function(server, resolve, reject)
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("reloading software resources", error.code); 
+      else log_error("reloading software resources", error); 
     });
 }
 
@@ -793,7 +792,7 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
       {
         var put_obj = {};
         put_obj.id = 3;
-        put_obj.value = "coap://" + server + ":5433/" + package;
+        put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
         //write the package URI to the uri resource
         exports.core_put("9" + "/" + slot + "/3", put_obj, urn, server, 
           function(response) {
@@ -802,6 +801,11 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
             {
               //the package is now downloading.
               console.log(urn + " is downloading " + package);
+              if (resolve) resolve(response);
+            }
+            else
+            {
+              if (reject) reject(response);
             }
           },
           function(error){ 
@@ -827,3 +831,91 @@ exports.list_devices = function(server, resolve, reject)
       else log_error("listing devices", error); 
     });
 }
+
+
+/////////////////////////////////////////////////////////////
+//
+exports.fw_state_to_string = function(state)
+{
+  switch (state[3])
+  {
+     case 0: return "Idle (before downloading or after successful updating)";
+     case 1: return "Downloading (The data sequence is on the way)";
+     case 2: return "Downloaded";
+     case 3: return "Updating";
+  }
+  return "unknown";
+}
+
+exports.fw_result_to_string = function(state)
+{
+  switch(state[5])
+  {
+    case 0: return "Initial value";
+    case 1: return "Firmware updated successfully";
+    case 2: return "Not enough flash memory for the new firmware package";
+    case 3: return "Out of RAM during downloading process";
+    case 4: return "Connection lost during downloading process";
+    case 5: return "Integrity check failure for new downloaded package";
+    case 6: return "Unsupported package type";
+    case 7: return "Invalid URI";
+    case 8: return "Firmware update failed";
+    case 9: return "Unsupported protocol";
+  }
+  return "unknown";
+}
+
+exports.firmware_get = function(urn, server, resolve, reject)
+{
+  exports.core_get("5", urn, server, 
+    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("fetching firmware resources", error); 
+    });
+}
+
+
+exports.firmware_push = function(package, urn, server, resolve, reject)
+{
+  //first get the state
+  exports.firmware_get(urn, server, function(repsonse){
+    //console.log(JSON.stringify());
+    var state = repsonse[0];
+    
+    console.log("firmware is " + exports.fw_state_to_string(state));
+
+    if (state[3] == 0) //idels
+    {
+      var put_obj = {};
+      put_obj.id = 1;
+      put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
+      console.log( put_obj.value);
+      //write the package URI to the uri resource
+      exports.core_put("5/0/1", put_obj, urn, server, 
+        function(response) {
+          console.log(response.status);
+          if (response.status == 200)
+          {
+            //the package is now downloading.
+            console.log(urn + " is downloading " + package);
+            if (resolve) resolve(response);
+          }
+          else
+          {
+            if (reject) reject(response);
+          }
+        },
+        function(error){ 
+          if (reject) reject(error);
+          else log_error("writing package URI", error); 
+        });
+    }
+    else
+    { 
+      console.log("not idle");
+    }
+  }, reject);
+ 
+}
+

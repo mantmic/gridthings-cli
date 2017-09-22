@@ -7,6 +7,8 @@ program
   '\n  To access Gridthings Edge services you must have a client certificate for your instance in ~/.gtcli/' + 
   '\n  ')
  .command('software', 'Manage the software packages installed on a device')
+ .command('firmware', 'Manage the firmware installed on a device')
+ .command('package', 'Manage the software and firmware packages available on a server')
  .command('devices', 'List the devices attached to your Gridthings Edge services')
  .command('ssn', 'Configure SSN endpoints managed by your Gridthings Edge services')
  .command('history', 'Retrieve the history for an LWM2M resources')
