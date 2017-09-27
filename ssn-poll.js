@@ -20,7 +20,7 @@ program
       }
       else
       {
-        console.log(response.code);
+        console.log(response.status);
       }
     })
   })

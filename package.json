@@ -33,6 +33,7 @@
     "gtcli-software-show": "./sw-show.js",
     "gtcli-software-activate": "./sw-activate.js",
     "gtcli-software-deactivate": "./sw-deactivate.js",
+    "gtcli-software-install": "./sw-install.js",
     "gtcli-software-uninstall": "./sw-uninstall.js",
     "gtcli-devices": "./devices.js",
     "gtcli-ssn": "./ssn.js",

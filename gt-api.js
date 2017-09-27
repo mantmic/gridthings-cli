@@ -495,11 +495,34 @@ exports.ssn_poll_endpoint = function(urn, server, resolve, reject)
 ////////////////////////////////////////////////////
 exports.update_state_to_string = function(us)
 {
-  if (us == 0) return "not installed";
-  else if (us == 1) return "downloading";
-  else if (us == 2) return "verifying";
-  else if (us == 3) return "downlaoded";
-  else if (us == 4) return "installed";
+  switch(us)
+  {
+    case 0: return "Before downloading.";
+    case 1: return "The downloading process has started and is on-going.";
+    case 2: return "The package has been completely downloaded.";
+    case 3: return "The package has been correctly downloaded and is ready to be installed. ";
+    case 4: return "The software is correctly installed and can be activated or deactivated.";
+  }
+  return "unknown";
+}
+exports.update_result_to_string = function(ur)
+{
+   switch(ur)
+  {
+    case 0:  return "Initial.";
+    case 1:  return "Downloading.";
+    case 2:  return "Software successfully installed.";
+    case 3:  return "Successfully Downloaded and package integrity verified";
+    case 50: return "Not enough storage for the new software package.";
+    case 51: return "Out of memory during downloading process.";
+    case 52: return "Connection lost during downloading process.";
+    case 53: return "Package integrity check failure.";
+    case 54: return "Unsupported package type.";
+    case 56: return "Invalid URI";
+    case 57: return "Device defined update error";
+    case 58: return "Software installation failure";
+    case 59: return "Uninstallation/Uninstallation Failure";
+  } 
   return "unknown";
 }
 
@@ -538,8 +561,8 @@ function lwm2m_object_response_to_map(response)
 function software_print_state(context, state)
 {
   console.log(context+ (state[12] ? "active" : "inactive"));
-  console.log("  Update state:  " + exports.update_state_to_string(state[7]) );
-  console.log("  Update result: " + state[9] );
+  console.log("  Update state:  " + exports.update_state_to_string(state[7]));
+  console.log("  Update result: " + exports.update_result_to_string(state[9]));
 }
 
 exports.software_delete_package = function(hashid, server, resolve, reject)
@@ -623,25 +646,74 @@ exports.software_deactivate = function(slot, urn, server, resolve, reject)
 
       if (state[7] == 0)
       { //no package
-        if (reject) reject("no application loaded");
-        else log_error("deactiviating package", "no application loaded");
+        if (reject) reject("no software loaded");
+        else log_error("deactiviating software", "no software loaded");
       }
       else if (!state[12])
-      { //downloading
-        if (reject) reject("application is now inactive");
-        else log_error("deactiviating package", "application is not active"); 
+      { //inactive
+        if (reject) reject("software is not active");
+        else log_error("deactiviating software", "software is not active"); 
       }
       else
       {
-        //execute install
+        //execute deactivate
         exports.core_exec("9" + "/" + slot + "/11", null, urn, server, 
           function(response) {
-            console.log("application is now inactive");
+            if (response.status == 200) console.log("software is now inactive");
+            else console.log(response.text);
           },
           function(error){ 
             if (reject) reject(error);
-            else log_error("deactiviating package", error); 
+            else log_error("deactiviating software", error); 
           });
+      }
+    } 
+  }, reject);
+}
+
+
+exports.software_install = function(slot, urn, server, resolve, reject)
+{
+  //first get the state
+  exports.software_get(urn, server, function(repsonse){
+    var software_states = repsonse;
+    if (!software_states[slot])
+    {
+      if (reject) reject("the specified slot is not available");
+      else log_error("activating software", "the specified slot is not available"); 
+    }
+    else
+    {
+      var state = software_states[slot];
+      software_print_state("software in slot 0 is ", software_states[slot]);
+
+      if (state[7] == 0)
+      { //no package
+        if (reject) reject("no software loaded");
+        else log_error("activiating software", "no software loaded");
+      }
+      else if (state[7] == 1)
+      { //downloading
+        if (reject) reject("software is currently downloading");
+        else log_error("activiating software", "software is currently downloading"); 
+      }
+      else if (state[7] == 4) //installed
+      { 
+        console.log("software is already installed");
+        if (reject) reject("software is already installed");
+      }
+      else if (state[7] == 3) //downloaded but not installed
+      {
+        exports.core_exec("9" + "/" + slot + "/4", null, urn, server, function(response) {
+         
+          if (response.status == 200) console.log("software is now installed");
+          else console.log("failed to install software", response.text); 
+
+        },
+        function(error){ 
+          if (reject) reject(error);
+          else log_error("installing software", error); 
+        });
       }
     } 
   }, reject);
@@ -665,47 +737,62 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
 
       if (state[7] == 0)
       { //no package
-        if (reject) reject("no application loaded");
-        else log_error("activiating package", "no application loaded");
+        if (reject) reject("no software loaded");
+        else log_error("activiating software", "no software loaded");
       }
       else if (state[7] == 1)
       { //downloading
-        if (reject) reject("application is currently downloading");
-        else log_error("activiating package", "application is currently downloading"); 
+        if (reject) reject("software is currently downloading");
+        else log_error("activiating software", "software is currently downloading"); 
       }
       else if (state[12]) //active
       {
-        //execute install
+        //execute deactivate
         exports.core_exec("9" + "/" + slot + "/11", null, urn, server, 
           function(response) {
-            console.log("application is now inactive");
-            exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
-              console.log("application is now uninstalled");
-            },
-            function(error){ 
-              if (reject) reject(error);
-              else log_error("uninstalling package", error); 
-            });
+            if (response.status == 200)
+            {
+              console.log("application is now inactive");
+              exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
+                console.log("software is now uninstalled");
+              },
+              function(error){ 
+                if (reject) reject(error);
+                else log_error("uninstalling software", error); 
+              });
+            }
+            else
+            {
+              console.log(response.text);
+            }
           },
           function(error){ 
             if (reject) reject(error);
-            else log_error("uninstalling package", error); 
+            else log_error("uninstalling software", error); 
           });
       }
       else if (state[7] == 4) //installed
       { 
-        console.log("application is now inactive");
+        console.log("software is now inactive");
         exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
-          console.log("application is now uninstalled");
+          if (response.status == 200) console.log("software is now uninstalled");
+          else console.log("failed to uninstall software", response.text); 
         },
         function(error){ 
           if (reject) reject(error);
-          else log_error("uninstalling package", error); 
+          else log_error("uninstalling software", error); 
         });
       }
-      else
+      else if (state[7] == 3) //downloaded but not active
       {
-        //??
+        exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
+          if (response.status == 200) console.log("software is now uninstalled");
+          else console.log("failed to uninstall software", response.text); 
+        },
+        function(error){ 
+          if (reject) reject(error);
+          else log_error("uninstalling software", error); 
+        });
       }
     } 
   }, reject);
@@ -730,42 +817,44 @@ exports.software_activate = function(slot, urn, server, resolve, reject)
 
       if (state[7] == 0)
       { //no package
-        if (reject) reject("no application loaded");
-        else log_error("activiating package", "no application loaded");
+        if (reject) reject("no software loaded");
+        else log_error("activiating software", "no software loaded");
       }
       else if (state[7] == 1)
       { //downloading
-        if (reject) reject("application is currently downloading");
-        else log_error("activiating package", "application is currently downloading"); 
+        if (reject) reject("software is currently downloading");
+        else log_error("activiating software", "software is currently downloading"); 
       }
       else if (state[7] == 3) //downloaded but not installed
       {
         //execute install
         exports.core_exec("9" + "/" + slot + "/4", null, urn, server, 
           function(response) {
-            console.log("application is now installed");
+            console.log("software is now installed");
             exports.core_exec("9" + "/" + slot + "/10", null, urn, server, function(response) {
-              console.log("application is now active");
+             if (response.status == 200) console.log("software is now active");
+             else console.log("failed to activiate software", response.text); 
             },
             function(error){ 
               if (reject) reject(error);
-              else log_error("activiating package", error); 
+              else log_error("activiating software", error); 
             });
           },
           function(error){ 
             if (reject) reject(error);
-            else log_error("activiating package", error); 
+            else log_error("activiating software", error); 
           });
       }
       else if (state[7] == 4) //installed
       { 
-        console.log("application is already installed");
+        console.log("software is already installed");
         exports.core_exec("9" + "/" + slot + "/10", null, urn, server, function(response) {
-          console.log("application is now active");
+          if (response.status == 200) console.log("software is now active");
+          else console.log("failed to activiate software", response.text); 
         },
         function(error){ 
           if (reject) reject(error);
-          else log_error("activiating package", error); 
+          else log_error("activiating software", error); 
         });
       }
     } 
@@ -810,12 +899,12 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
           },
           function(error){ 
             if (reject) reject(error);
-            else log_error("writing package URI", error); 
+            else log_error("writing software URI", error); 
           });
       }
       else
       { //need to uninstall first
-
+        log_error("pushing software", "slot 0 has software installed, uninstall first", error); 
       }
     } 
   }, reject);

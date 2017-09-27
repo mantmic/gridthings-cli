@@ -51,9 +51,10 @@ var gtapi = require('./gt-api.js');
 program
   .arguments('<urn> <server>')
   .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
   .action(function(urn, server) {
-    gtapi.log_level = 1;//program.verbose;
-    print_json = false;
+    if (program.verbose) gtapi.log_level = 1;
+    print_json = program.json;
     gtapi.software_get(urn, server, function(response)
     {
       if (print_json)
@@ -73,7 +74,7 @@ program
           
 
           console.log("  update state:     " + gtapi.update_state_to_string(state[7]));
-          console.log("  update result:    " + state[9]);
+          console.log("  update result:    " + gtapi.update_result_to_string(state[9]));
           console.log("  activation state: " + state[12]);
         }
       }

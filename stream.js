@@ -46,7 +46,7 @@ program
     const reader = new KinesisReadable(client, server_name + "-records", options)
     reader.on('data', function(record_Buffer)
     {
-      //console.log(record_Buffer.toString('ascii'));
+      if (program.verbose) console.log(record_Buffer.toString('ascii'));
       try
       {
         var record = JSON.parse(record_Buffer.toString('ascii'));

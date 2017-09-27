@@ -15,13 +15,30 @@ program
 
     gtapi.software_publish_package(package, server, function(response)
     {
-      if (print_json)
+      if (response.status == 200)
       {
-        console.log(JSON.stringify(response, null, 2));
+        gtapi.software_reload_packages(server, function(response)
+        { 
+          if (print_json)
+          {
+            console.log(JSON.stringify(response, null, 2));
+          }
+          else
+          {
+            console.log(response.status);
+          }
+        })
       }
       else
       {
-        console.log(response.status + " " + response.text);
+        if (print_json)
+        {
+          console.log(JSON.stringify(response, null, 2));
+        }
+        else
+        {
+          console.log(response.status + " " + response.text);
+        }
       }
     })
   })
