@@ -48,4 +48,12 @@ Currently the CLI doesn't support providing a passphrase for the client certific
 openssl rsa -in manderson-01.gridthin.gs-client.key -out manderson-01.gridthin.gs-client.key
 ```
 
+## Setup default server
 
+Add a file called `default` into `~/.gtcli` with the following:
+
+```
+{
+  "server" : "manderson-01.gridthin.gs"                                                                                                                                
+}
+```
