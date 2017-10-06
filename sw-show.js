@@ -63,19 +63,20 @@ program
       }
       else
       {
-        for (var instance_id = 0; instance_id < 2; instance_id++)
+        for (var instance_id = 0; instance_id < 4; instance_id++)
         {
           var state = response[instance_id];
          
           console.log("Software Instance " + instance_id + ":");
 
-          console.log("  name:             " + (state[0] == "" ? "(none)" : state[0]));
-          console.log("  version:          " + (state[1] == "" ? "(none)" : state[1]));
+          console.log("  Name:             " + (state[0] == "" ? "(none)" : state[0]));
+          console.log("  Version:          " + (state[1] == "" ? "(none)" : state[1]));
           
 
-          console.log("  update state:     " + gtapi.update_state_to_string(state[7]));
-          console.log("  update result:    " + gtapi.update_result_to_string(state[9]));
-          console.log("  activation state: " + state[12]);
+          console.log("  Update state:     " + gtapi.update_state_to_string(state[7]));
+          console.log("  Update result:    " + gtapi.update_result_to_string(state[9]));
+          console.log("  Activation state: " + state[12]);
+          console.log("  Bytes downloaded: " + state[30005]);
         }
       }
     })

@@ -27,7 +27,7 @@
     "gtcli-firmware": "./fw.js",
     "gtcli-firmware-push": "./fw-push.js",
     "gtcli-firmware-show": "./fw-show.js",
-    "gtcli-firmware-activate": "./fw-update.js",
+    "gtcli-firmware-update": "./fw-update.js",
     "gtcli-software": "./sw.js",
     "gtcli-software-push": "./sw-push.js",
     "gtcli-software-show": "./sw-show.js",

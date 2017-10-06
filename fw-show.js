@@ -31,11 +31,12 @@ program
        
         console.log("Firmware:");
 
-        console.log("  Name:             " + get_value(state[0], "(none)"));
-        console.log("  Version:          " + get_value(state[1], "(none)"));
+        console.log("  Name:             " + get_value(state[6], "(none)"));
+        console.log("  Version:          " + get_value(state[7], "(none)"));
         console.log("  Package URI:      " + get_value(state[1], "(none)"));
         console.log("  State:            " + gtapi.fw_state_to_string(get_value(state, 0)));
         console.log("  Update Result:    " + gtapi.fw_result_to_string(get_value(state, 0)));
+        console.log("  Bytes downloaded: " + get_value(state[30005], 0));
         
       }
     })

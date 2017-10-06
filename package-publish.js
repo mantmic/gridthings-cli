@@ -15,7 +15,8 @@ program
 
     gtapi.software_publish_package(package, server, function(response)
     {
-      if (response.status == 200)
+      console.log(response.status);
+      if ((response.status == 201) || (response.status == 200))
       {
         gtapi.software_reload_packages(server, function(response)
         { 

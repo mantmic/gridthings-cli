@@ -47,6 +47,29 @@ var GT_PACKAGE_SIGNATURE_SIZE = 32;
 var GT_PACKAGE_MAX_NAME       = 24;
 var GT_PACKAGE_MAX_VERSION    = 24;
 
+function package_toString(package)
+{
+  return package.type + ":\n " + 
+    "name:      " + package.name + "\n " +
+    "version:   " + package.version + "\n " + 
+    "signature: " + package.signature + "\n " + 
+    "hashid:    " + package.hashid + "\n " + 
+    "size:      " + package.data_length  + " bytes";
+}
+
+exports.from_mongo = function(mongo_record)
+{
+  var package = {};
+  package.hashid = mongo_record._id;
+  package.signature = mongo_record.signature;
+  package.version = mongo_record.version;
+  package.name = mongo_record.name;
+  package.type = mongo_record.type;
+  package.data_length = mongo_record.payload_length;
+  package.toString = function () { return package_toString(package); }
+  return package;
+}
+
 exports.load =function(filename)
 {
   var package = {};
@@ -59,7 +82,18 @@ exports.load =function(filename)
   parse_index += GT_PACKAGE_MAX_NAME + 1;
   package.version = package.data.slice(parse_index, parse_index + GT_PACKAGE_MAX_VERSION + 1).toString();
   parse_index += GT_PACKAGE_MAX_VERSION + 1;
-  package.type = (package.data.readUInt8(parse_index) == 0xAA) ? "firmware" : "application";
+
+  type = package.data.readUInt8(parse_index);
+
+  switch(type)
+  {
+    case 0xAA: package.type = "firmware"; break;
+    case 0x55: package.type = "application"; break;
+    case 0xBB: package.type = "patch"; break;
+    case 0xCC: package.type = "user"; break;
+    case 0xDD: package.type = "bootloader"; break;
+  };
+
   parse_index++;
   package.data_length = package.data.readUInt32LE(parse_index);
   parse_index += 4;
@@ -68,14 +102,21 @@ exports.load =function(filename)
   var hashids = new Hashids('ducupusuhi10', 8, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890");
   package.hashid = hashids.encode(package.data.readUInt32LE(0));
 
-  package.toString = function()
+  package.toString = function () { return package_toString(package);}
+
+  //gets a Mongo DB record for the package
+  package.toMongo = function()
   {
-    return package.type + ":\n " + 
-      "name:      " + package.name + "\n " +
-      "version:   " + package.version + "\n " + 
-      "signature: " + package.signature + "\n " + 
-      "hashid:    " + package.hashid + "\n " + 
-      "size:      " + package.data_length  + " bytes";
+     var bindata = new require('mongodb').Binary(package.data);
+     return { 
+       "package" : bindata,
+       "hashid": package.hashid, 
+       "signature" : package.signature,
+       "version": package.version,
+       "name": package.name,
+       "type": package.type,
+       "payload_length":package.data_length
+     };
   }
   return package;
 }

@@ -3,7 +3,7 @@
 var program = require('commander');
 
 var gtapi = require('./gt-api.js');
-
+var gtswp = require('./gt-software-package.js');
 // {
 //   "_exceptions":[
 //     {
@@ -28,22 +28,24 @@ program
       try
       {
         var contents = JSON.parse(response.text);
-        
         var json_values = [];
         for (var package = 0; package < contents.length; package++)
         {
           if (!contents[package]._id["$oid"])
           {
+            var p = gtswp.from_mongo(contents[package]);
             if (print_json)
             {
-              json_values.push(contents[package]._id)
+              json_values.push(p);
             }
             else
             {
-              console.log(contents[package]._id);
+              console.log(p.toString());
+              console.log("");
             }
           }
         }
+
         if (print_json)
         {
           console.log(JSON.stringify(json_values, null, 2));
@@ -52,7 +54,7 @@ program
       }
       catch(e)
       {
-        console.log(response.text);
+        console.log(e);
       }  
     })
   })

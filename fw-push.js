@@ -20,7 +20,7 @@ program
      if (print_json) console.log(JSON.stringify(response));
      else 
      {
-        console.log(response);
+        console.log(response.status);
      }
     });
   })

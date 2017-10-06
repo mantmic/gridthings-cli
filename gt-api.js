@@ -576,14 +576,14 @@ exports.software_delete_package = function(hashid, server, resolve, reject)
     resolve,
     function(error){ 
       if (reject) reject(error);
-      else log_error("listing software packages", error); 
+      else log_error("deleting software packages", error); 
     });
 }
 
 //lists the packages installed in the configuration database
 exports.software_list_packages = function(server, resolve, reject)
 {
-  exports.config_get("packages", ["keys={'_id':1}", "np"], server, 
+  exports.config_get("packages", ["keys={'_id':1 ,'name':1, 'version':1, 'signature':1, 'type':1, 'payload_length':1}", "np"], server, 
     resolve,
     function(error){ 
       if (reject) reject(error);
@@ -594,11 +594,14 @@ exports.software_list_packages = function(server, resolve, reject)
 exports.software_publish_package = function(package_name, server, resolve, reject)
 {
   var package = gtswp.load(package_name);
-  log_debug("publishing " + package.toString());
-  var bindata = new require('mongodb').Binary(package.data);
+ 
+  console.log("publishing " + package.toString());
+
+  var record = package.toMongo();
+ 
   exports.config_put(
     "packages/" + package.hashid, 
-    { "package" : bindata }, 
+    record, 
     server, 
     resolve,
     function(error){ 
@@ -921,7 +924,6 @@ exports.list_devices = function(server, resolve, reject)
     });
 }
 
-
 /////////////////////////////////////////////////////////////
 //
 exports.fw_state_to_string = function(state)
@@ -974,7 +976,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
     
     console.log("firmware is " + exports.fw_state_to_string(state));
 
-    if (state[3] == 0) //idels
+    if ((state[3] == 0) || (state[3] == 2))//idle
     {
       var put_obj = {};
       put_obj.id = 1;
@@ -983,7 +985,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
       //write the package URI to the uri resource
       exports.core_put("5/0/1", put_obj, urn, server, 
         function(response) {
-          console.log(response.status);
+         
           if (response.status == 200)
           {
             //the package is now downloading.
@@ -1005,6 +1007,45 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
       console.log("not idle");
     }
   }, reject);
- 
 }
+
+
+exports.firmware_update = function(urn, server, resolve, reject)
+{
+  //first get the state
+  exports.firmware_get(urn, server, function(repsonse){
+    var state = repsonse[0];
+    console.log("firmware is " + exports.fw_state_to_string(state));
+   
+    if (state[3] == 0)
+    { //no package
+      if (reject) reject("no firmware downloaded");
+      else log_error("updating firmware", "no software loaded");
+    }
+    else if (state[3] == 1)
+    { //downloading
+      if (reject) reject("Firmware is currently downloading");
+      else log_error("updating firmware", "software is currently downloading"); 
+    }
+    else if (state[3] == 2) //downloaded 
+    {
+      //execute install
+      exports.core_exec("5/0/2", null, urn, server, 
+        function(response) {
+          if (response.status == 200) console.log("firmware has been updated, device is rebooting");
+          if (resolve) resolve(response);
+        },
+        function(error){ 
+          if (reject) reject(error);
+          else log_error("activiating software", error); 
+        });
+    }
+    else if (state[7] == 3) //installed
+    { 
+      if (reject) reject("Firmware is currently updating");
+      else log_error("updating firmware", "firmware is currently updating"); 
+    }
+  }, reject);
+}
+
 
