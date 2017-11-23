@@ -3,10 +3,16 @@
 var program = require('commander');
 var gtapi = require('./gt-api.js');
 
+function append_space(str, size) 
+{
+  var s =  str + "                       ";
+  return s.substr(0, size);
+}
 
 program
   .arguments('<endpoint> <rmu> <config> [server]')
   .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
   .action(function(urn, rmu, config, server) {
     if (program.verbose) gtapi.log_level = 1;
     if (server === undefined) server = ".";
@@ -21,6 +27,11 @@ program
     put_obj.id = "14";
     put_obj.value = parseInt(rmu);
 
+    if (config.split("\r\n").length > 1)
+    {
+      console.log("too many meters is configuation, maximum of 1 per request is supported");
+      return;
+    }
     if (program.verbose) console.log("writing rmu " + put_obj.value);
 
     //set the rmu id
@@ -41,15 +52,27 @@ program
                 gtapi.core_exec(load_config_resource, null, urn, server, 
                   function(response) 
                   {
-                    console.log("done, checking result...");
-
                     gtapi.core_get(write_result_resource, urn, server, 
                       function(response) 
                       {
                         if (response.status == 200) 
                         {
                           var resp_obj = JSON.parse(response.text);
-                          console.log("write complete with status '" + resp_obj.content.value + "'");
+                          resp_obj =  JSON.parse(resp_obj.content.value);
+                          if (program.json) console.log(JSON.stringify(resp_obj, null, 2));
+                          else
+                          {
+                            for (var i = 0; i < resp_obj.length; i++)
+                            {
+                              var response = resp_obj[i];
+                              
+                              console.log(
+                                append_space(response.context, 14) +
+                                append_space(response.success ? "OK" : "FAIL", 6) + 
+                                "'" + append_space(response.command.replace("\r", ""), 20) + "'  " + 
+                                response.error);
+                            }
+                          }
                         }
                         else
                         {
