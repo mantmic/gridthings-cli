@@ -173,6 +173,7 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
     var certs = get_certs(server);
     var url = make_client_url(path, urn, server);
     log_debug("PUT " + url);
+    log_debug("Body: " + JSON.stringify(body));
     request.put(url)
       .ca(certs.ca)
       .cert(certs.crt)

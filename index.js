@@ -13,4 +13,5 @@ program
  .command('ssn', 'Configure SSN endpoints managed by your Gridthings Edge services')
  .command('history', 'Retrieve the history for an LWM2M resources')
  .command('stream', 'Attach to the record stream to view live records as they arrive')
+ .command('mdl', 'Manage Layson Meter Data Loggers (requires MDL application to be loaded on the Gridthings Core)')
  .parse(process.argv);

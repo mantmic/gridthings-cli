@@ -45,7 +45,10 @@
     "gtcli-ssn-delete-sessions": "./ssn-delete-sessions.js",
     "gtcli-history": "./history.js",
     "gtcli-history-get": "./history-get.js",
-    "gtcli-stream": "./stream.js"
+    "gtcli-stream": "./stream.js",
+    "gtcli-mdl": "./mdl.js",
+    "gtcli-mdl-show": "./mdl-show.js",
+    "gtcli-mdl-config": "./mdl-config.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
