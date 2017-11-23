@@ -54,16 +54,30 @@ program
         {
           if (print_json)
           {
-            console.log(record_json);
+            console.log(record_Buffer.toString('ascii'));
           }
           else
           {
-            console.log(record.endpoint + "\t" + 
-              record.timestamp + "\t" + record.object_id + "/" + 
-              record.object_instance_id + "/" + record.resource_id + 
-              ((record.resource_instance_id != null) ? "/"+record.resource_instance_id : "") + "\t" +
-              record.data);
+            if ((record.type == "REGISTRATION") || (record.type == "DEREGISTRATION"))
+            {
+               console.log(record.type + " " + record.endpoint + "\t" + record.timestamp + "\t" + "lifetime " + record.data.lifetime); 
+            }
+            else if (record.type == "COAPMSG")
+            {
+              //ignore?
+            }
+            else if (record.type == "NOTIFICATION")
+            {
 
+            }
+            else 
+            {
+              console.log(record.endpoint + "\t" + 
+                record.timestamp + "\t" + record.object_id + "/" + 
+                record.object_instance_id + "/" + record.resource_id + 
+                ((record.resource_instance_id != null) ? "/"+record.resource_instance_id : "") + "\t" +
+                record.data);
+            }
           }
           
         }
