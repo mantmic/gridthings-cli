@@ -78,6 +78,19 @@ To force the server to poll the SSN gateway for a device
 gtcli ssn poll SSN00135005003cb872.SG.PROD.STAR.SSNSGS.NET .
 ```
 
+To release a new package to the server
+```
+gtcli-package-publish -v build/iot-mdl.gta .
+```
+
+To push in a new app to a device and activate it (then deactivate it).
+```
+gtcli software push 1 Egpy8RvW rn:imei:357520072786144  .
+gtcli software show rn:imei:357520072786144  .
+gtcli software activate 0 rn:imei:357520072786144 .
+gtcli software deactivate 0 rn:imei:357520072786144 .
+gtcli software uninstall 0 rn:imei:357520072786144 .
+```
 # Development
 
 For development you will want to link to the files in this repo so that when you change the cli it is 
