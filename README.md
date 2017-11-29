@@ -83,13 +83,13 @@ To release a new package to the server
 gtcli-package-publish -v build/iot-mdl.gta .
 ```
 
-To push in a new app to a device and activate it (then deactivate it).
+To push in a new app to a device app slot 0 and activate it (then deactivate it).
 ```
-gtcli software push 1 Egpy8RvW rn:imei:357520072786144  .
-gtcli software show rn:imei:357520072786144  .
-gtcli software activate 0 rn:imei:357520072786144 .
-gtcli software deactivate 0 rn:imei:357520072786144 .
-gtcli software uninstall 0 rn:imei:357520072786144 .
+gtcli software push 0 5qZvWxJr urn:imei:355922062171570  .
+gtcli software show urn:imei:355922062171570  .
+gtcli software activate 0 urn:imei:355922062171570 .
+gtcli software deactivate 0 urn:imei:355922062171570 .
+gtcli software uninstall 0 urn:imei:355922062171570 .
 ```
 # Development
 
