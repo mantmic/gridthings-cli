@@ -7,7 +7,7 @@ var gtapi = require('./gt-api.js');
 gtapi.log_level = 1;
 
 program
-  .arguments('<package> <urn> <server>')
+  .arguments('<package> <urn> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(package, urn, server) {

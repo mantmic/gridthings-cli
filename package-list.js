@@ -16,11 +16,10 @@ var gtswp = require('./gt-software-package.js');
 //   "message":"Timeout connecting to MongoDB, is it running?"
 // }
 
-program
-  .arguments('<server>')
-  .option('-v, --verbose', 'Be verbose')
-  .option('-j, --json', 'Print repsonse as JSON')
-  .action(function(server) {
+var the_server = null;
+
+function list(server) 
+{
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
     gtapi.software_list_packages(server, function(response)
@@ -57,5 +56,14 @@ program
         console.log(e);
       }  
     })
-  })
+  }
+
+program
+  .arguments('[server]')
+  .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
+  .action(function(server) { the_server = server; })
   .parse(process.argv);
+
+list(the_server == null ? "." : the_server);
+
