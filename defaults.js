@@ -17,6 +17,7 @@ catch (e)
 //apply default
 exports.check_server_name = function(server)
 {
+  if (server === undefined) server = ".";
   if (server == ".") { return config.server; }
   return server;
 }

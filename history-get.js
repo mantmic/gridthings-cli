@@ -12,6 +12,7 @@ program
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
     delimeter = ": ";
+    console.log("server '" + server + "'");
     gtapi.history_get_for_resource(endpoint, resource, newest, oldest, server, function(data)
     {
       try

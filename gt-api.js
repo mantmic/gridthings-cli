@@ -325,7 +325,7 @@ exports.config_delete = function(path, query, server, resolve, reject)
 
 function make_history_url(path, server)
 {
-  return "https://history." + server + "" + path;
+  return "https://history." + defaults.check_server_name(server) + "" + path;
 }
 
 
