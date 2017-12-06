@@ -10,7 +10,7 @@ AWS.config.update({region:'ap-southeast-2'});
 const { KinesisReadable } = require('kinesis-streams')
 
 program
-  .arguments('<endpoint> <resource> <server>')
+  .arguments('<endpoint> <resource> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print records as JSON')
   .action(function(endpoint, resource, server) 

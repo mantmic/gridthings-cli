@@ -5,7 +5,7 @@ var program = require('commander');
 var gtapi = require('./gt-api.js');
 
 program
-  .arguments('<endpoint> <resource> <newest> <oldest> <server>')
+  .arguments('<endpoint> <resource> <newest> <oldest> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(endpoint, resource, newest, oldest, server) {

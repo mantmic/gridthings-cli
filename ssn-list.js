@@ -4,6 +4,7 @@ var program = require('commander');
 
 var gtapi = require('./gt-api.js');
 
+var the_server = null;
 // {
 //   "_exceptions":[
 //     {
@@ -16,11 +17,8 @@ var gtapi = require('./gt-api.js');
 //   "message":"Timeout connecting to MongoDB, is it running?"
 // }
 
-program
-  .arguments('<server>')
-  .option('-v, --verbose', 'Be verbose')
-  .option('-j, --json', 'Print repsonse as JSON')
-  .action(function(server) {
+function list(server) 
+{
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
 
@@ -41,5 +39,14 @@ program
     function(error){
       console.log(error);
     })
-  })
+  }
+
+program
+  .arguments('[server]')
+  .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
+  .action(function(server) { the_server = server; })
   .parse(process.argv);
+
+
+list(the_server == null ? "." : the_server);

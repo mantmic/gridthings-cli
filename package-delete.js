@@ -17,7 +17,7 @@ var gtapi = require('./gt-api.js');
 // }
 
 program
-  .arguments('<id> <server>')
+  .arguments('<id> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(id, server) {

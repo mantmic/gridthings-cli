@@ -6,7 +6,7 @@ var gtapi = require('./gt-api.js');
 
 
 program
-  .arguments('<urn> <server>')
+  .arguments('<urn> [server]')
   .option('-v, --verbose', 'Be verbose')
   .action(function(urn, server) {
     gtapi.log_level = 1;//program.verbose;

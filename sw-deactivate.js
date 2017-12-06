@@ -4,7 +4,7 @@ var program = require('commander');
 
 var gtapi = require('./gt-api.js');
 program
-  .arguments('install <slot> <urn> <server>')
+  .arguments('install <slot> <urn> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(slot, urn, server) {
