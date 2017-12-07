@@ -11,7 +11,7 @@ try
 }
 catch (e)
 {
-  console.log("no defaults found in " + defaults_path +  " " + e);
+  console.log("error in defaults file " + defaults_path +  " " + e);
 }
 
 //apply default
@@ -20,4 +20,9 @@ exports.check_server_name = function(server)
   if (server === undefined) server = ".";
   if (server == ".") { return config.server; }
   return server;
+}
+
+exports.get_config = function()
+{
+  return config;
 }

@@ -1,6 +1,7 @@
 # gridthings cli
 Command line tools for working with a Gridthings Edge Server
 
+First must install node (v8.9.2 tested) and npm (v5.5.1 tested)
 To Install:
 
 > sudo npm install -g
