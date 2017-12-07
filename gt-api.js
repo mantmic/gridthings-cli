@@ -119,6 +119,7 @@ function get_certs(server)
   server_certs[server].crt = fs.readFileSync(gt_cli_path(server + '/' + server + '-client.pem'));
   return server_certs[server];
 }
+exports.get_certs = get_certs;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 //
