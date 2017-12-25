@@ -48,7 +48,19 @@
     "gtcli-stream": "./stream.js",
     "gtcli-mdl": "./mdl.js",
     "gtcli-mdl-show": "./mdl-show.js",
-    "gtcli-mdl-config": "./mdl-config.js"
+    "gtcli-mdl-config": "./mdl-config.js",
+    "gtcli-dred": "./dred.js",
+    "gtcli-dred-immediate": "./dred-immediate.js",
+    "gtcli-dred-activate": "./dred-activate.js",
+    "gtcli-dred-context": "./dred-context.js",
+    "gtcli-dred-daily": "./dred-daily.js",
+    "gtcli-dred-deactivate": "./dred-deactivate.js",
+    "gtcli-dred-disable": "./dred-disable.js",
+    "gtcli-dred-enable": "./dred-enable.js",
+    "gtcli-dred-helpers": "./dred-helpers.js",
+    "gtcli-dred-once": "./dred-once.js",
+    "gtcli-dred-start": "./dred-start.js",
+    "gtcli-dred-stop": "./dred-stop.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
@@ -65,10 +77,12 @@
     "commander": "^2.11.0",
     "hashids": "^1.1.1",
     "kinesis-streams": "^0.7.0",
+    "lazy.js": "^0.5.0",
     "mongodb": "^2.2.31",
     "njwt": "^0.4.0",
     "pem": "^1.9.7",
     "postgrest-client": "^1.1.2",
+    "simpl-schema": "^1.3.0",
     "superagent": "^3.6.0",
     "winston": "^2.3.1",
     "ws": "^3.3.2"
