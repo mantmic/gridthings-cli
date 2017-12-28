@@ -45,6 +45,7 @@
     "gtcli-ssn-delete-sessions": "./ssn-delete-sessions.js",
     "gtcli-history": "./history.js",
     "gtcli-history-get": "./history-get.js",
+    "gtcli-history-query": "./history-query.js",
     "gtcli-stream": "./stream.js",
     "gtcli-mdl": "./mdl.js",
     "gtcli-mdl-show": "./mdl-show.js",

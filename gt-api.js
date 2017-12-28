@@ -194,13 +194,14 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
 
 function add_query(q)
 {
-  var str_q = q.length != 0 ? "?" : "";
+  var str_q = ""; 
   for (var i = 0; i < q.length; i++)
   {
     if (i != 0) str_q += "&";
     str_q += q[i];
   }
-  return str_q;
+  if (str_q.length != 0) return "?" + str_q;
+  return "";
 }
 
 
@@ -323,10 +324,9 @@ exports.config_delete = function(path, query, server, resolve, reject)
 }
 
 
-
 function make_history_url(path, server)
 {
-  return "https://history." + defaults.check_server_name(server) + "" + path;
+  return "https://history." + defaults.check_server_name(server) + "/" + path;
 }
 
 

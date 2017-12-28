@@ -16,8 +16,8 @@ AWS.config.update({region:'ap-southeast-2'});
 const { KinesisReadable } = require('kinesis-streams')
 
 //Azure
-const msRestAzure = require('ms-rest-azure');
-const EventHubManagement = require('azure-arm-eventhub');
+//const msRestAzure = require('ms-rest-azure');
+//const EventHubManagement = require('azure-arm-eventhub');
 
 var resource_parts = [];
 
