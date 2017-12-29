@@ -2,7 +2,8 @@
 const os = require('os');
 var fs = require("fs");
 
-var defaults_path = os.homedir() + '/.gtcli/defaults';
+const path = require('path');
+var defaults_path = path.join(os.homedir(), '.gtcli', 'defaults');
 
 var config = {};
 try
