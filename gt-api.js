@@ -115,9 +115,9 @@ function get_certs(server)
   }
 
   server_certs[server] = {};
-  server_certs[server].ca  = fs.readFileSync(gt_cli_path(server + '/ca.crt'));
-  server_certs[server].key = fs.readFileSync(gt_cli_path(server + '/' + server + '-client.key'));
-  server_certs[server].crt = fs.readFileSync(gt_cli_path(server + '/' + server + '-client.pem'));
+  server_certs[server].ca  = fs.readFileSync(gt_cli_path(path.join(server, 'ca.crt')));
+  server_certs[server].key = fs.readFileSync(gt_cli_path(path.join(server, server + '-client.key')));
+  server_certs[server].crt = fs.readFileSync(gt_cli_path(path.join(server, server + '-client.pem')));
   return server_certs[server];
 }
 exports.get_certs = get_certs;
