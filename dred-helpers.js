@@ -80,7 +80,7 @@ module.exports = {
         optional: true,
         type: Number,
         min: 0,
-        max: 3
+        max: 8
       },
       startTime: {
         type: Number,
@@ -94,7 +94,7 @@ module.exports = {
               //start time must be a unix timestamp
               if (!this.isSet) {
                 return 'required';
-              } else if (+new Date() > this.value) {
+              } else if (+new Date() / 1000 > this.value) {
                 return 'mustBeInTheFuture';
               }
             } else if (schedule.value == 2) {
@@ -167,7 +167,7 @@ module.exports = {
     for (var input in inputs) {
       switch (input) {
         case 'mode': {
-          values.mode = ['None', 'IO1', 'OI2', 'OI3', 'OI4', 'IO5', 'IO6', 'IO7', 'IO8'].indexOf(inputs[input]);
+          values.mode = ['None', 'OI1', 'OI2', 'OI3', 'OI4', 'OI5', 'OI6', 'OI7', 'OI8'].indexOf(inputs[input]);
           break;
         }
 
