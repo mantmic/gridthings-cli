@@ -167,7 +167,7 @@ module.exports = {
     for (var input in inputs) {
       switch (input) {
         case 'mode': {
-          values.mode = ['None', 'OI2', 'OI3', 'OI4'].indexOf(inputs[input]);
+          values.mode = ['None', 'IO1', 'OI2', 'OI3', 'OI4', 'IO5', 'IO6', 'IO7', 'IO8'].indexOf(inputs[input]);
           break;
         }
 
