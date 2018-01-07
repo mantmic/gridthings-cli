@@ -10,8 +10,7 @@ program
   .action(function(urn, server) {
     gtapi.log_level = program.verbose ? 1 : 0;
     print_json = false;
-
-    gtapi.ssn_add_endpoint(urn, server, function(response)
+    gtapi.security_delete_endpoint(urn, server, function(response)
     {
       if (print_json)
       {
@@ -21,6 +20,10 @@ program
       {
         console.log(response.status + " " + response.text);
       }
+    }, 
+    function(err)
+    {
+      console.log("" + err.response.text);
     })
   })
   .parse(process.argv);
