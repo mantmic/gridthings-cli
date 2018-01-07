@@ -5,13 +5,12 @@ var program = require('commander');
 var gtapi = require('./gt-api.js');
 
 program
-  .arguments('<urn> [server]')
+  .arguments('<PSK-bootstrap> <PSK-core> <urn> [server]')
   .option('-v, --verbose', 'Be verbose')
-  .action(function(urn, server) {
+  .action(function(PSK_bootstrap, PSK_core, urn, server) {
     gtapi.log_level = program.verbose ? 1 : 0;
     print_json = false;
-
-    gtapi.ssn_add_endpoint(urn, server, function(response)
+    gtapi.security_add_endpoint(PSK_bootstrap, PSK_core, urn, server, function(response)
     {
       if (print_json)
       {
@@ -21,6 +20,10 @@ program
       {
         console.log(response.status + " " + response.text);
       }
+    }, 
+    function(err)
+    {
+      console.log("error:" + err);
     })
   })
   .parse(process.argv);

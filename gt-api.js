@@ -1,5 +1,6 @@
 
 var request = require('superagent');
+const path = require('path');
 
 const os = require('os');
 var fs = require("fs");
@@ -72,7 +73,7 @@ function log_error(context, err)
 
 function gt_cli_path(file)
 {
-  return os.homedir() + '/.gtcli/' + file;
+  return path.join(os.homedir(), '.gtcli', file);
 }
 
 function make_core_url(server)
@@ -114,9 +115,9 @@ function get_certs(server)
   }
 
   server_certs[server] = {};
-  server_certs[server].ca  = fs.readFileSync(gt_cli_path(server + '/ca.crt'));
-  server_certs[server].key = fs.readFileSync(gt_cli_path(server + '/' + server + '-client.key'));
-  server_certs[server].crt = fs.readFileSync(gt_cli_path(server + '/' + server + '-client.pem'));
+  server_certs[server].ca  = fs.readFileSync(gt_cli_path(path.join(server, 'ca.crt')));
+  server_certs[server].key = fs.readFileSync(gt_cli_path(path.join(server, server + '-client.key')));
+  server_certs[server].crt = fs.readFileSync(gt_cli_path(path.join(server, server + '-client.pem')));
   return server_certs[server];
 }
 exports.get_certs = get_certs;
@@ -194,13 +195,14 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
 
 function add_query(q)
 {
-  var str_q = q.length != 0 ? "?" : "";
+  var str_q = ""; 
   for (var i = 0; i < q.length; i++)
   {
     if (i != 0) str_q += "&";
     str_q += q[i];
   }
-  return str_q;
+  if (str_q.length != 0) return "?" + str_q;
+  return "";
 }
 
 
@@ -323,10 +325,9 @@ exports.config_delete = function(path, query, server, resolve, reject)
 }
 
 
-
 function make_history_url(path, server)
 {
-  return "https://history." + defaults.check_server_name(server) + "" + path;
+  return "https://history." + defaults.check_server_name(server) + "/" + path;
 }
 
 
@@ -1050,4 +1051,210 @@ exports.firmware_update = function(urn, server, resolve, reject)
   }, reject);
 }
 
+/////////////////////////////////////////////////////////////////////////////////////////
+// Security functions
+function make_bs_url(server)
+{
+  return "https://bs." + defaults.check_server_name(server) + "/api/bootstrap";
+}
+
+function make_bs_client_url(path, urn, server)
+{
+  var url = make_bs_url(defaults.check_server_name(server));
+  if (urn != "") 
+  {
+    url += "/" + urn;
+    if (path != "")
+    {
+       url += "/" + path;
+    } 
+  }
+  return url;
+}
+
+
+exports.bs_get= function(path, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_bs_url(server);
+    log_debug("GET " + url);
+     request.get(url)
+      .ca(certs.ca)
+      .cert(certs.crt)
+      .key(certs.key)
+      .set('Content-Type', 'application/json')
+      .end(function(error, response) {
+        if (error) reject(error);
+        else resolve(response);
+      });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+exports.bs_post= function(path, body, urn, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_bs_client_url(path, urn, server);
+    log_debug("POST " + url);
+    log_debug("Body: " + JSON.stringify(body));
+    request.post(url)
+      .ca(certs.ca)
+      .cert(certs.crt)
+      .key(certs.key)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .end(function(error, response) {
+        if (error) reject(error);
+        else resolve(response);
+      });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
+exports.bs_delete= function(path, urn, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_bs_client_url(path, urn, server);
+    log_debug("DELETE " + url);
+    request.delete(url)
+      .ca(certs.ca)
+      .cert(certs.crt)
+      .key(certs.key)
+      .end(function(error, response) {
+        if (error) reject(error);
+        else resolve(response);
+      });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
+
+function hexToBytes(hex) 
+{
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+  {
+    bytes.push(parseInt(hex.substr(c, 2), 16));
+  }
+  return bytes;
+}
+
+function strToBytes(str) 
+{
+  var codes = str.split("");
+  for (var i = 0; i < codes.length; i++)
+  {
+    codes[i] = codes[i].charCodeAt(0);
+  }
+  return codes;
+}
+
+exports.security_list_endpoints = function(server, resolve, reject)
+{
+  exports.bs_get("", server, function(response) {
+    if (response.status == 200)
+    {
+      //the package is now downloading.
+      if (resolve) resolve(response);
+    }
+    else
+    {
+      if (reject) reject(response);
+    }
+  },
+  function(error){ 
+    if (reject) reject(error);
+    else log_error("listing endpoint security", error); 
+  });
+}
+
+exports.security_add_endpoint = function(PSK_bootstrap, PSK_core, urn, server, resolve, reject)
+{
+  var security_object = {
+    "servers": {
+        "1": {
+            "shortId": "1"
+        }
+      },
+      "security": {
+          "0": {
+              "uri": "coaps://[2001:db8::1]:5684/",
+              "bootstrapServer": true,
+              "securityMode": "PSK",
+              "serverPublicKeyOrId": [],
+              "publicKeyOrId": [],
+              "secretKey": [],
+              "serverId": "0"
+          },
+          "1": {
+              "uri": "coaps://[2001:db8::2]:5684/",
+              "securityMode": "PSK",            
+              "serverPublicKeyOrId": [],
+              "publicKeyOrId": [],
+              "secretKey": [],
+              "serverId": "1"
+          }
+      }
+  }
+
+  security_object.security[0].uri = "coaps://" + defaults.check_server_name(server) + ":5644/";
+  security_object.security[0].serverPublicKeyOrId = strToBytes(defaults.check_server_name(server) );
+  security_object.security[0].publicKeyOrId = strToBytes(urn);
+  security_object.security[0].secretKey = hexToBytes(PSK_bootstrap);
+
+  security_object.security[1].uri = "coaps://" + defaults.check_server_name(server) + ":5684/";
+  security_object.security[1].serverPublicKeyOrId = strToBytes(defaults.check_server_name(server) );
+  security_object.security[1].publicKeyOrId = strToBytes(urn);
+  security_object.security[1].secretKey = hexToBytes(PSK_core);
+
+  exports.bs_post("", security_object, urn, server, 
+    function(response) {
+      if (response.status == 200)
+      {
+        //the package is now downloading.
+        if (resolve) resolve(response);
+      }
+      else
+      {
+        if (reject) reject(response);
+      }
+    },
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("adding endpoint security", error); 
+    });
+}
+
+exports.security_delete_endpoint = function(urn, server, resolve, reject)
+{
+  exports.bs_delete("", urn, server, function(response) 
+  {
+    if (response.status == 204)
+    {
+      //the package is now downloading.
+      if (resolve) resolve(response);
+    }
+    else
+    {
+      if (reject) reject(response);
+    }
+  },
+  function(error){ 
+    if (reject) reject(error);
+    else log_error("deleting security", error); 
+  });
+}
 
