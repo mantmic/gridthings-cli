@@ -2,9 +2,9 @@
 
 var program = require('commander');
 program
- .description('Command line tool for managing GridThings devices and services.' + 
+ .description('Command line tool for managing GridThings devices and services.' +
   '\n  ' +
-  '\n  To access Gridthings Edge services you must have a client certificate for your instance in ~/.gtcli/' + 
+  '\n  To access Gridthings Edge services you must have a client certificate for your instance in ~/.gtcli/' +
   '\n  ')
  .command('software', 'Manage the software packages installed on a device')
  .command('firmware', 'Manage the firmware installed on a device')
@@ -15,4 +15,5 @@ program
  .command('stream', 'Attach to the record stream to view live records as they arrive')
  .command('security', 'Manage endpoint security keys')
  .command('mdl', 'Manage Layson Meter Data Loggers (requires MDL application to be loaded on the Gridthings Core)')
+ .command('dred', 'Configure the IoT DRED for common usage scenarios')
  .parse(process.argv);
