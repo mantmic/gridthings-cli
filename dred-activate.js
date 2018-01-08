@@ -20,6 +20,7 @@ program
     }
 
     gtapi.core_put('33000/0/4', {id: 4, value: true}, urn, server, function () {
+      gtapi.core_get('33000/0', urn, server, () => {}, () => {});
       console.info('Configuration was applied');
     }, function (error) {
       Helpers.displayError(error);

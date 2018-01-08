@@ -27,7 +27,8 @@ program
       resources: Helpers.buildPayloadResources(Lazy(values).pick(['context', 'dredClass', 'utcOffset']).toObject())
     };
 
-    gtapi.core_put('33000/' + 0, payload, urn, server, function () {
+    gtapi.core_put('33000/0', payload, urn, server, function () {
+      gtapi.core_get('33000/0', urn, server, () => {}, () => {});
       console.info('Configuration was applied');
     }, function (error) {
       Helpers.displayError(error);

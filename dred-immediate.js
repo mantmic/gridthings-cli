@@ -31,6 +31,7 @@ program
     };
 
     gtapi.core_put('33001/' + instance, payload, urn, server, function () {
+      gtapi.core_get('33001/' + instance, urn, server, () => {}, () => {});
       console.info('Configuration was applied');
     }, function (error) {
       Helpers.displayError(error);
