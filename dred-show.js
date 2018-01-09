@@ -133,7 +133,6 @@ program
         }
         else
         {
-          console.info(JSON.stringify(dred_object, null, 2));
           print_dred(dred_object, urn);
           print_schedule(schedule_object);
         }
