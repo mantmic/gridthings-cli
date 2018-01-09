@@ -20,7 +20,11 @@ program
     }
 
     gtapi.core_put('33000/0/4', {id: 4, value: true}, urn, server, function () {
-      console.info('Configuration was applied');
+      gtapi.core_get('33000/0', urn, server, function () {
+        console.info('DRED ' + urn + ' is now activated');
+      }, function (error) {
+        Helpers.displayError(error);
+      });
     }, function (error) {
       Helpers.displayError(error);
     });

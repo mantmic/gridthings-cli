@@ -20,7 +20,11 @@ program
     }
 
     gtapi.core_exec('33001/' + instance + '/10', null, urn, server, function () {
-      console.info('Configuration was applied');
+      gtapi.core_get('33001/' + instance, urn, server, function () {
+        console.info('Configuration was applied to DRED ' + urn);
+      }, function (error) {
+        Helpers.displayError(error);
+      });
     }, function (error) {
       Helpers.displayError(error);
     });

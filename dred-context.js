@@ -28,7 +28,11 @@ program
     };
 
     gtapi.core_put('33000/' + 0, payload, urn, server, function () {
-      console.info('Configuration was applied');
+      gtapi.core_get('33000/' + 0, urn, server, function () {
+        console.info('Configuration applied to DRED ' + urn);
+      }, function (error) {
+        Helpers.displayError(error);
+      });
     }, function (error) {
       Helpers.displayError(error);
     });

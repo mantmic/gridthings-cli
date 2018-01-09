@@ -60,7 +60,8 @@
     "gtcli-dred-helpers": "./dred-helpers.js",
     "gtcli-dred-once": "./dred-once.js",
     "gtcli-dred-start": "./dred-start.js",
-    "gtcli-dred-stop": "./dred-stop.js"
+    "gtcli-dred-stop": "./dred-stop.js",
+    "gtcli-dred-show": "./dred-show.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
