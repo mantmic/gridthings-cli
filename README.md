@@ -120,6 +120,12 @@ gtcli software activate 0 urn:imei:355922062171570 .
 gtcli software deactivate 0 urn:imei:355922062171570 .
 gtcli software uninstall 0 urn:imei:355922062171570 .
 ```
+
+To get all device and resources from a default server
+```
+gtcli stream . .
+```
+
 # Development
 
 For development you will want to link to the files in this repo so that when you change the cli it is
