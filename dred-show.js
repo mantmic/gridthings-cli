@@ -40,7 +40,7 @@ function mode_to_string(mode)
 
 function print_dred(dred_object, urn)
 {
-  var dred_resources = {}
+  var dred_resources = {};
   dred_object.content.resources.map(function(i) { dred_resources[i.id] = i.value; });
 
   /* Extracted Value, based on resource id */
@@ -94,7 +94,6 @@ function time_hh_mm_ss_to_string(time_s)
   return hh+" hours, "+mm+" minutes, "+ss+" seconds";
 }
 
-
 function start_time_to_string(time, schedule)
 {
 
@@ -118,7 +117,7 @@ function print_schedule(schedule_object)
   for (var i = 0; i < schedules.length; i ++)
   {
     console.info("Schedule " + i);
-    var schedule_resources = {}
+    var schedule_resources = {};
     schedules[i].resources.map(function(i) { schedule_resources[i.id] = i.value; });
 
     /* Extracted Value, based on resource id */
