@@ -40,16 +40,26 @@ function mode_to_string(mode)
 
 function print_dred(dred_object, urn)
 {
-  var dred_resources = {} 
+  var dred_resources = {}
   dred_object.content.resources.map(function(i) { dred_resources[i.id] = i.value; });
 
+  /* Extracted Value, based on resource id */
+  var dred_context                  = dred_resources[0];
+  var dred_class                    = dred_resources[1];
+  var dred_utility_enrolment_group  = dred_resources[2];
+  var dred_enabled                  = dred_resources[3];
+  var dred_events_enabled           = dred_resources[4];
+  var dred_UTC_Offset               = dred_resources[5];
+  var dred_Current_Mode             = dred_resources[6];
+
   console.info("DRED " + urn);
-  console.info("context:        " + dred_resources[0]);
-  console.info("class:          " + class_to_string(dred_resources[1]));
-  console.info("enabled:        " + dred_resources[4]);
-  console.info("events enabled: " + dred_resources[4]);
-  console.info("UTC Offset:     " + dred_resources[6]);
-  console.info("Current Mode:   " + mode_to_string(dred_resources[7]));
+  console.info("context:        " + dred_context);
+  console.info("class:          " + class_to_string(dred_class));
+  console.info("enabled:        " + dred_enabled);
+  console.info("events enabled: " + dred_events_enabled);
+  console.info("UTC Offset:     " + dred_UTC_Offset);
+  console.info("Current Mode:   " + mode_to_string(dred_Current_Mode));
+  console.info("utility enrolment group : " + dred_utility_enrolment_group);
 }
 
 function schedule_to_string(schedule)
@@ -67,7 +77,7 @@ function schedule_to_string(schedule)
 function utc_time_to_string(time)
 {
   if (time == 0) return "never";
- 
+
   return new Date(time * 1000).toString();
 }
 
@@ -87,22 +97,33 @@ function start_time_to_string(time, schedule)
 function print_schedule(schedule_object)
 {
   var schedules = schedule_object.content.instances;
-  
+
   for (var i = 0; i < schedules.length; i ++)
   {
     console.info("Schedule " + i);
-    var schedule_resources = {} 
+    var schedule_resources = {}
     schedules[i].resources.map(function(i) { schedule_resources[i.id] = i.value; });
 
-    console.info("  Mode:         " + mode_to_string(schedule_resources[0]));
-    console.info("  Schedule:     " + schedule_to_string(1));
-    console.info("  Start Time:   " + start_time_to_string(schedule_resources[2]));
-    console.info("  Start Window: " + schedule_resources[3]+ "s");
-    console.info("  Min Duration: " + schedule_resources[4]+ "s");
-    console.info("  Max Duration: " + schedule_resources[5]+ "s");
-    console.info("  Active:       " + schedule_resources[7]);
-    console.info("  Enbled:       " + schedule_resources[8]);
-    console.info("  Expiry:       " + utc_time_to_string(schedule_resources[9]));
+    /* Extracted Value, based on resource id */
+    var io_mode         = schedule_resources[0];
+    var schedule_type   = schedule_resources[1];
+    var start_time_s    = schedule_resources[2];
+    var start_window_s  = schedule_resources[3];
+    var min_duration_s  = schedule_resources[4];
+    var max_duration_s  = schedule_resources[5];
+    var active_mode     = schedule_resources[7];
+    var enabled         = schedule_resources[8];
+    var expiry_UTC      = schedule_resources[9];
+
+    console.info("  Mode:         " + mode_to_string(io_mode));
+    console.info("  Schedule:     " + schedule_to_string(schedule_type));
+    console.info("  Start Time:   " + start_time_to_string(start_time_s), schedule_type);
+    console.info("  Start Window: " + start_window_s + "s");
+    console.info("  Min Duration: " + min_duration_s + "s");
+    console.info("  Max Duration: " + max_duration_s + "s");
+    console.info("  Active:       " + active_mode);
+    console.info("  Enabled:      " + enabled);
+    console.info("  Expiry:       " + utc_time_to_string(expiry_UTC));
   }
 }
 
