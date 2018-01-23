@@ -69,15 +69,17 @@ In `~/.gtcli/defaults`
 {
   "server" : "actewagl-01.gridthin.gs",
   "actewagl-01.gridthin.gs":{
-    "jwt_secret":"...xxxxx....",
+    "jwt_secret":"...xxx...",
     "stream_reader":"eventhub"
   },
-  "actewagl-01.gridthin.gs":{
-    "jwt_secret":"...xxxxx....",
+  "some-other-server.gs":{
+    "jwt_secret":"...xxx...",
     "stream_reader":"websocket"
   }
 }
 ```
+
+
 
 
 # Examples
