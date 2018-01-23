@@ -47,10 +47,11 @@ function print_dred(dred_object, urn)
   var dred_context                  = dred_resources[0];
   var dred_class                    = dred_resources[1];
   var dred_utility_enrolment_group  = dred_resources[2];
-  var dred_enabled                  = dred_resources[3];
-  var dred_events_enabled           = dred_resources[4];
-  var dred_UTC_Offset               = dred_resources[5];
-  var dred_Current_Mode             = dred_resources[6];
+  //  dred_reset /33000/0/3
+  var dred_enabled                  = dred_resources[4];
+  var dred_events_enabled           = dred_resources[5];
+  var dred_UTC_Offset               = dred_resources[6];
+  var dred_Current_Mode             = dred_resources[7];
 
   console.info("DRED " + urn);
   console.info("context:        " + dred_context);
@@ -66,32 +67,48 @@ function schedule_to_string(schedule)
 {
   switch (schedule)
   {
-    case 1: return "Immediate: Action the DR event as soon as the start command is received by the DRED.";
-    case 2: return "Once: Action the DR event at a time specified in the future. ";
-    case 3: return "Daily: Action the DR event each day at the specified time";
+    case 0: return "Immediate: Action the DR event as soon as the start command is received by the DRED.";
+    case 1: return "Once: Action the DR event at a time specified in the future. ";
+    case 2: return "Daily: Action the DR event each day at the specified time";
+    case 3: return "Week Days: Action the DR event each weekdays at the specified time";
+    case 4: return "Week Ends: Action the DR event each weekends at the specified time";
     default: return "None";
   }
   return "None";
 }
 
-function utc_time_to_string(time)
+function utc_time_to_string(utc_time_s)
 {
-  if (time == 0) return "never";
+  if (utc_time_s == 0) return "never";
 
-  return new Date(time * 1000).toString();
+  return new Date(utc_time_s * 1000).toString();
 }
+
+function time_hh_mm_ss_to_string(time_s)
+{
+  var date = new Date(time_s * 1000);
+  var hh = date.getUTCHours();
+  var mm = date.getMinutes();
+  var ss = date.getUTCSeconds();
+
+  return hh+" hours, "+mm+" minutes, "+ss+" seconds";
+}
+
 
 function start_time_to_string(time, schedule)
 {
 
   switch (schedule)
   {
+    case 0: return utc_time_to_string(time);
     case 1: return utc_time_to_string(time);
-    case 2: return utc_time_to_string(time);
-    case 3: return (new Date).clearTime().addSeconds(time).toString('H:mm:ss');
+    case 2: return time_hh_mm_ss_to_string(time)+" from midnight";
+    {
+      var date = new Date(60*60*1000)
+    }
   }
 
-  return utc_time_to_string(time);
+  return "Not Implemented Yet ("+time+")";
 }
 
 function print_schedule(schedule_object)
@@ -111,13 +128,15 @@ function print_schedule(schedule_object)
     var start_window_s  = schedule_resources[3];
     var min_duration_s  = schedule_resources[4];
     var max_duration_s  = schedule_resources[5];
+    //  start : executable resource /33001/0/6
     var active_mode     = schedule_resources[7];
     var enabled         = schedule_resources[8];
     var expiry_UTC      = schedule_resources[9];
+    //  stop : executable resource /33001/0/10
 
     console.info("  Mode:         " + mode_to_string(io_mode));
     console.info("  Schedule:     " + schedule_to_string(schedule_type));
-    console.info("  Start Time:   " + start_time_to_string(start_time_s), schedule_type);
+    console.info("  Start Time:   " + start_time_to_string(start_time_s, schedule_type));
     console.info("  Start Window: " + start_window_s + "s");
     console.info("  Min Duration: " + min_duration_s + "s");
     console.info("  Max Duration: " + max_duration_s + "s");
