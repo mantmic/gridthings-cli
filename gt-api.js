@@ -388,7 +388,7 @@ exports.history_get_for_resource = function(endpoint, resource, newest, oldest, 
   q.push("select=uri_path,timestamp,value");
   q.push("order=timestamp.asc");
 
-  exports.history_get("/values", q, server, 
+  exports.history_get("values", q, server, 
     function(response) {
       try
       {
