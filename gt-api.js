@@ -330,6 +330,30 @@ function make_history_url(path, server)
   return "https://history." + defaults.check_server_name(server) + "/" + path;
 }
 
+exports.history_exec= function(path, body, server, resolve, reject)
+{
+  try
+  {
+    var certs = get_certs(server);
+    var url = make_history_url(path, server);
+    log_debug("EXEC " + url);
+    request.post(url)
+      .ca(certs.ca)
+      .cert(certs.crt)
+      .key(certs.key)
+      .set('Content-Type', 'application/json')
+      .send(body)
+      .end(function(error, response) {
+        if (error) reject(error);
+        else resolve(response);
+      });
+  }
+  catch (e)
+  {
+    reject(e);
+  }
+}
+
 
 exports.history_get = function(path, query, server, resolve, reject)
 {
