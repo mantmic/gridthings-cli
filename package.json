@@ -79,7 +79,10 @@
     "gtcli-sample-offset": "./sample-offset.js",
     "gtcli-lm": "./lm.js",
     "gtcli-lm-show": "./lm-show.js",
-    "gtcli-lm-set": "./lm-set.js"
+    "gtcli-lm-set": "./lm-set.js",
+    "gtcli-delivery": "./delivery.js",
+    "gtcli-delivery-show": "./delivery-show.js",
+    "gtcli-delivery-set": "./delivery-set.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"

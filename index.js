@@ -13,6 +13,7 @@ program
  .command('ssn',      'Configure SSN endpoints managed by your Gridthings Edge services')
  .command('history',  'Retrieve the history for an LWM2M resources')
  .command('event',    'Manage the event objects on a device')
+ .command('delivery', 'Manage the sample and event delivery in a device')
  .command('sample',   'Manage the sample objects on a device')
  .command('stream',   'Attach to the record stream to view live records as they arrive')
  .command('security', 'Manage endpoint security keys')
