@@ -66,7 +66,20 @@
     "gtcli-dred-once": "./dred-once.js",
     "gtcli-dred-start": "./dred-start.js",
     "gtcli-dred-stop": "./dred-stop.js",
-    "gtcli-dred-show": "./dred-show.js"
+    "gtcli-dred-show": "./dred-show.js",
+    "gtcli-event": "./event.js",
+    "gtcli-event-show": "./event-show.js",
+    "gtcli-event-realtime": "./event-realtime.js",
+    "gtcli-event-scheduled": "./event-scheduled.js",
+    "gtcli-sample": "./sample.js",
+    "gtcli-sample-show": "./sample-show.js",
+    "gtcli-sample-start": "./sample-start.js",
+    "gtcli-sample-stop": "./sample-stop.js",
+    "gtcli-sample-period": "./sample-period.js",
+    "gtcli-sample-offset": "./sample-offset.js",
+    "gtcli-lm": "./lm.js",
+    "gtcli-lm-show": "./lm-show.js",
+    "gtcli-lm-set": "./lm-set.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"

@@ -187,13 +187,8 @@ module.exports = {
     return values;
   },
 
-  displayError(error) {
-    console.error('Something went wrong...');
-    if (error.stack) {
-      console.error(error.stack);
-    }
-    else {
-      console.error(error);
-    }
+  displayError(error) 
+  {
+    console.error('error ' + context + "\n" + error.status + " " + error.response.text);
   }
 };
