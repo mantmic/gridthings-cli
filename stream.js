@@ -115,20 +115,13 @@ function ws_stream(endpoint, resource, server, jwt_secret)
 //  "processId":36,
 //  "channel":"records",
 //  payload":"{\"timestamp\":\"2017-12-07T08:51:49\",\"endpoint\":\"urn:ssni:001e0029573650112032353\",\"object_id\":30001,\"object_instance_id\":125,\"resource_id\":4,\"resource_instance_id\":null,\"data\":false}"}
-function eventhub_stream(endpoint, resource, server) 
+function eventhub_stream(endpoint, resource, connStr) 
 {
-  // const resourceGroupName = 'GridthingsEdgeResourceGroup-12171113';
-  // const namespaceName = 'gridthingsedgeeventhubnamespace-12171113';
-  // const eventHubName = 'gridthingsedgeeventhub-12171113';
-  // const subscriptionId = '017cd31f-01f1-40de-9715-2d0e038d9b90';
-
-
   var EventHubClient = require('azure-event-hubs').Client;
 
-  var connStr = 'Endpoint=sb://gridthingsedgeeventhubnamespace-12171113.servicebus.windows.net/;SharedAccessKeyName=gridthingsedgeeventhubauthrule-12171113;SharedAccessKey=GhhjIKxJ8Mk4gv5WnPa1kgjxPxqdUOnUGEdKz75UGKY=;EntityPath=gridthingsedgeeventhub-12171113';
-
-  var printError = function (err) {
-      console.log(err.message);
+  var printError = function (err) 
+  {
+    console.log(err.message);
   };
 
   var printMessage = function (message) 
@@ -142,8 +135,6 @@ function eventhub_stream(endpoint, resource, server)
     {
       console.log(e);
     }
-
-      
   };
 
   var client = EventHubClient.fromConnectionString(connStr);
@@ -160,15 +151,6 @@ function eventhub_stream(endpoint, resource, server)
     })
     .catch(printError);
 
-
-  // msRestAzure
-  //   .interactiveLogin()
-  //   .then(credentials => {
-  //     const client = new EventHubManagement(credentials, subscriptionId);
-  //     return client.eventHubs.get(resourceGroupName, namespaceName, eventHubName);
-  //   })
-  //   .then(zones => console.dir(zones, { depth: null, colors: true }))
-  //   .catch(err => console.log(err));
 }
 
 function kinesis_stream(endpoint, resource, server) 
@@ -228,7 +210,10 @@ if (typeof sever_config === 'undefined')
 else
 {
   if (sever_config.stream_reader == "kinesis") kinesis_stream(the_endpoint, the_resource, the_server);
-  else if (sever_config.stream_reader == "eventhub") eventhub_stream(the_endpoint, the_resource, the_server);
+  else if (sever_config.stream_reader == "eventhub") 
+  {
+    eventhub_stream(the_endpoint, the_resource, server_config.event_hub_connection_string);
+  }
   else ws_stream(the_endpoint, the_resource, the_server, sever_config.jwt_secret);
 }
 

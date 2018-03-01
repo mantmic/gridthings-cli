@@ -6,6 +6,7 @@ var gtapi = require('./gt-api.js');
 
 program
   .arguments('<urn> [server]')
+  .description('Delete the PSK keys for the specified endpoint')
   .option('-v, --verbose', 'Be verbose')
   .action(function(urn, server) {
     gtapi.log_level = program.verbose ? 1 : 0;

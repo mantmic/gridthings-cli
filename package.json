@@ -93,7 +93,7 @@
   },
   "dependencies": {
     "async": "^2.5.0",
-    "aws-sdk": "^2.118.0",
+    "aws-sdk": "^2.201.0",
     "azure-event-hubs": "0.0.8",
     "coap": "^0.21.0",
     "commander": "^2.11.0",
