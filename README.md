@@ -145,7 +145,7 @@ DEVICE_URI="urn:slipi:00160021544350012034335"
 PACKAGE_HASH_ID=EAgqQO3Q
 
 gtcli firmware push ${PACKAGE_HASH_ID} ${DEVICE_URI} .
-gtcli firmware activate 0 ${DEVICE_URI} .
+gtcli firmware update 0 ${DEVICE_URI} .
 gtcli firmware show ${DEVICE_URI} .
 ```
 
