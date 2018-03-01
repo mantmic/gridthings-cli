@@ -202,19 +202,19 @@ for (var i = resource_parts.length; i < 4; i++)
 }
 
 var config = defaults.get_config();
-var sever_config = config[config.server];
-if (typeof sever_config === 'undefined')
+var server_config = config[config.server];
+if (typeof server_config === 'undefined')
 {
   console.log("no server configuration in ~/.gtcli/defaults");
 }
 else
 {
-  if (sever_config.stream_reader == "kinesis") kinesis_stream(the_endpoint, the_resource, the_server);
-  else if (sever_config.stream_reader == "eventhub") 
+  if (server_config.stream_reader == "kinesis") kinesis_stream(the_endpoint, the_resource, the_server);
+  else if (server_config.stream_reader == "eventhub") 
   {
     eventhub_stream(the_endpoint, the_resource, server_config.event_hub_connection_string);
   }
-  else ws_stream(the_endpoint, the_resource, the_server, sever_config.jwt_secret);
+  else ws_stream(the_endpoint, the_resource, the_server, server_config.jwt_secret);
 }
 
 
