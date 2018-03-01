@@ -81,7 +81,6 @@ In `~/.gtcli/defaults`
 
 
 
-
 # Examples
 
 Get help
@@ -127,6 +126,50 @@ To get all device and resources from a default server
 ```
 gtcli stream . .
 ```
+
+## Remote Update Of Device Firmware
+
+First publish firmware
+
+```
+GTF_PATH=build/example_firmware.gtf
+
+# Publish Firmware To Package Server
+gtcli package publish -v ${GTF_PATH} .
+```
+
+Publishing will return a package hash id which you can then use to publish:
+
+```
+DEVICE_URI="urn:slipi:00160021544350012034335"
+PACKAGE_HASH_ID=EAgqQO3Q
+
+gtcli firmware push ${PACKAGE_HASH_ID} ${DEVICE_URI} .
+gtcli firmware activate 0 ${DEVICE_URI} .
+gtcli firmware show ${DEVICE_URI} .
+```
+
+## Remote Update Of Device App
+
+```
+GTA_PATH=example_app.gtf
+
+gtcli-package-publish -v ${GTA_PATH}
+```
+
+Publishing will return a package hash id which you can then use to publish:
+
+```
+DEVICE_URI="urn:slipi:00270046544350012034335"
+PACKAGE_HASH_ID=51bor0eD
+
+gtcli software deactivate 0 ${DEVICE_URI} .
+gtcli software uninstall 0 ${DEVICE_URI} .
+gtcli software push 0 ${PACKAGE_HASH_ID} ${DEVICE_URI}  .
+gtcli software show ${DEVICE_URI}  .
+gtcli software activate 0 ${DEVICE_URI} .
+```
+
 
 # Development
 
