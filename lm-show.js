@@ -78,10 +78,10 @@ program
         }
 
       }, function (error) {
-        Helpers.displayError(error);
+        Helpers.displayError("getting current curve", error);
       });
     }, function (error) {
-      Helpers.displayError(error);
+      Helpers.displayError("getting line monitor", error);
     });
   })
   .parse(process.argv);

@@ -187,7 +187,7 @@ module.exports = {
     return values;
   },
 
-  displayError(error) 
+  displayError(context, error) 
   {
     console.error('error ' + context + "\n" + error.status + " " + error.response.text);
   }
