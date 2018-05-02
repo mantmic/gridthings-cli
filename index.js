@@ -20,4 +20,5 @@ program
  .command('mdl',      'Manage Layson Meter Data Loggers (requires MDL application to be loaded on the Gridthings Core)')
  .command('dred',     'Configure the IoT DRED for common usage scenarios (requires DRED application to be loaded on the Gridthings Core)')
  .command('lm',       'Configure the IoT Line Monitor for common usage scenarios (requires Line Monitor application to be loaded on the Gridthings Core)')
+ .command('reboot',   'Reboot the specified device')
  .parse(process.argv);
