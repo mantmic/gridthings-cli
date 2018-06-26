@@ -951,6 +951,26 @@ exports.list_devices = function(server, resolve, reject)
     });
 }
 
+
+exports.device_get = function(urn, server, resolve, reject)
+{
+  exports.core_get("3", urn, server, 
+    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("fetching device resources", error); 
+    });
+}
+
+exports.server_get = function(urn, server, resolve, reject)
+{
+  exports.core_get("1", urn, server, 
+    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(error){ 
+      if (reject) reject(error);
+      else log_error("fetching server resources", error); 
+    });
+}
 /////////////////////////////////////////////////////////////
 //
 exports.fw_state_to_string = function(state)

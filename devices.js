@@ -5,6 +5,14 @@ var program = require('commander');
 var gtapi = require('./gt-api.js');
 var the_server = null;
 
+
+function time_to_string(ct)
+{
+  var date = new Date(ct);
+
+  return date.toString();
+}
+
 function devices(server) 
 {    
   if (program.verbose) 
@@ -29,7 +37,7 @@ function devices(server)
           }
           else
           {
-            console.log(devices[i].endpoint + " last updated " + devices[i].lastUpdate);
+            console.log(devices[i].endpoint + " last updated " + time_to_string(devices[i].lastUpdate));
           }
         }
       }
