@@ -32,23 +32,23 @@ program
   .command('show', 'Show the calibrations for the specified Transformer Monitor phase.')
   .action(function(phase, urn, server) {
     wrongArguments = false;
-   
+
     if (program.verbose) {
       gtapi.log_level = 1;
     }
 
     var phase_instance = phase_str_to_instance(phase);
-    
+
     if (phase_instance != null)
     {
       gtapi.core_exec('32001/' + phase_instance + '/19', null, urn, server, function (res) {
         console.info("cleared existing calibration");
         gtapi.core_exec('32001/' + phase_instance + '/21', null, urn, server, function (res) {
-         
+
           var spinner = new Spinner('calibrating (wait 60s).. %s');
           spinner.setSpinnerString('|/-\\');
           spinner.start();
-          setTimeout(function(){spinner.stop(false);console.info("done");}, 10000);
+          setTimeout(function(){spinner.stop(false);console.info("done");}, 60000);
         }, function (error) {
           Helpers.displayError("calibrating transformer monitor " + phase + " phase", error);
         });
