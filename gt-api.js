@@ -44,7 +44,7 @@ process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0;
 
 function log_error(context, err)
 {
-  if (err.response) 
+  if (err.response)
   {
     try
     {
@@ -65,7 +65,7 @@ function log_error(context, err)
         console.log(err.response.status + " " + err.response.text);
       }
     }
-  } 
+  }
   else if (err.code) console.log((err.code == "ECONNREFUSED" ? "connection refused" : err.code) + " " + err.address);
   else console.log(err);
 }
@@ -94,13 +94,13 @@ function make_config_url(path, server)
 function make_client_url(path, urn, server)
 {
   var url = make_core_url(defaults.check_server_name(server));
-  if (urn != "") 
+  if (urn != "")
   {
     url += "/" + urn;
     if (path != "")
     {
        url += "/" + path;
-    } 
+    }
   }
   return url;
 }
@@ -150,6 +150,7 @@ exports.core_exec= function(path, body, urn, server, resolve, reject)
     var certs = get_certs(server);
     var url = make_client_url(path, urn, server);
     log_debug("EXEC " + url);
+    log_debug("Body: " + JSON.stringify(body));
     request.post(url)
       .ca(certs.ca)
       .cert(certs.crt)
@@ -195,7 +196,7 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
 
 function add_query(q)
 {
-  var str_q = ""; 
+  var str_q = "";
   for (var i = 0; i < q.length; i++)
   {
     if (i != 0) str_q += "&";
@@ -389,20 +390,20 @@ function history_get_oldest(newest, oldest)
   var newest_date = new Date(newest);
 
   var period = parseInt(oldest, 10);
-  if (period != NaN) 
+  if (period != NaN)
   {
      return new Date(newest_date.getTime() - (1000 * period)).toISOString();
   }
- 
+
   return new Date(oldest).toISOString();
 }
 
 ////////////////////////////////////////////////////
 //
-// gets the history for the specified resource from newest for period seconds 
+// gets the history for the specified resource from newest for period seconds
 exports.history_get_for_resource = function(endpoint, resource, newest, oldest, server, resolve, reject)
 {
-  //http://127.0.0.1:3000/values?endpoint=eq.testlwm2mclient&uri_path=like.3/0/7/*&timestamp=gte.2017-07-18&timestamp=lt.2017-07-19&select=timestamp,value&order=timestamp.asc' | 
+  //http://127.0.0.1:3000/values?endpoint=eq.testlwm2mclient&uri_path=like.3/0/7/*&timestamp=gte.2017-07-18&timestamp=lt.2017-07-19&select=timestamp,value&order=timestamp.asc' |
 
   var q = [];
   q.push("endpoint=eq." + endpoint);
@@ -412,7 +413,7 @@ exports.history_get_for_resource = function(endpoint, resource, newest, oldest, 
   q.push("select=uri_path,timestamp,value");
   q.push("order=timestamp.asc");
 
-  exports.history_get("values", q, server, 
+  exports.history_get("values", q, server,
     function(response) {
       try
       {
@@ -424,22 +425,22 @@ exports.history_get_for_resource = function(endpoint, resource, newest, oldest, 
         if (reject) reject(e.message);
       }
     },
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("getting history", error); 
+      else log_error("getting history", error);
     });
 }
 
 ////////////////////////////////////////////////////
 exports.ssn_list_endpoints = function(server, resolve, reject)
 {
-  exports.config_get("ssn-proxy-endpoints-1", "", server, 
+  exports.config_get("ssn-proxy-endpoints-1", "", server,
     function(response) {
       try
       {
-        
+
         var contents = JSON.parse(response.text);
-        //console.log(JSON.stringify(contents._embedded)); 
+        //console.log(JSON.stringify(contents._embedded));
         var endpoints = [];
         for (var ep = 0; ep < contents._embedded.length; ep++)
         {
@@ -455,9 +456,9 @@ exports.ssn_list_endpoints = function(server, resolve, reject)
         if (reject) reject(e.message);
       }
     },
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("listing software packages", error); 
+      else log_error("listing software packages", error);
     });
 }
 
@@ -470,15 +471,15 @@ exports.ssn_add_endpoint = function(urn, server, resolve, reject)
   }
 
   log_debug("adding " + urn);
- 
+
   exports.config_put(
-    "ssn-proxy-endpoints-1/" + urn, 
-    null, 
-    server, 
+    "ssn-proxy-endpoints-1/" + urn,
+    null,
+    server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("adding ssn endpoint", error); 
+      else log_error("adding ssn endpoint", error);
     });
 }
 
@@ -490,11 +491,11 @@ exports.ssn_remove_endpoint = function(urn, server, resolve, reject)
     if (reject) reject("invalid urn");
   }
 
-  exports.config_delete("ssn-proxy-endpoints-1/"+urn, "", server, 
+  exports.config_delete("ssn-proxy-endpoints-1/"+urn, "", server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("removing ssn endpoint", error); 
+      else log_error("removing ssn endpoint", error);
     });
 }
 
@@ -502,9 +503,9 @@ exports.ssn_reload_endpoints = function(server, resolve, reject)
 {
   exports.coap_put("ssn/reload", {}, server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("reloading ssn endpoints", error); 
+      else log_error("reloading ssn endpoints", error);
     });
 }
 
@@ -512,9 +513,9 @@ exports.ssn_poll_endpoint = function(urn, server, resolve, reject)
 {
   exports.coap_post("ssn/poll", {}, ["urn=" + urn], server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("polling ssn endpoint", error); 
+      else log_error("polling ssn endpoint", error);
     });
 }
 
@@ -549,7 +550,7 @@ exports.update_result_to_string = function(ur)
     case 57: return "Device defined update error";
     case 58: return "Software installation failure";
     case 59: return "Uninstallation/Uninstallation Failure";
-  } 
+  }
   return "unknown";
 }
 
@@ -581,7 +582,7 @@ function lwm2m_object_response_to_map(response)
   {
     return lwm2m_instance_array_to_map(resp_obj.content.instances);
   }
-  
+
   return {};
 }
 
@@ -599,51 +600,51 @@ exports.software_delete_package = function(hashid, server, resolve, reject)
     log_error("listing software packages", "invalid package id");
     if (reject) reject("invalid package id");
   }
-  exports.config_delete("packages/" + hashid, [], server, 
+  exports.config_delete("packages/" + hashid, [], server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("deleting software packages", error); 
+      else log_error("deleting software packages", error);
     });
 }
 
 //lists the packages installed in the configuration database
 exports.software_list_packages = function(server, resolve, reject)
 {
-  exports.config_get("packages", ["keys={'_id':1 ,'name':1, 'version':1, 'signature':1, 'type':1, 'payload_length':1}", "np"], server, 
+  exports.config_get("packages", ["keys={'_id':1 ,'name':1, 'version':1, 'signature':1, 'type':1, 'payload_length':1}", "np"], server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("listing software packages", error); 
+      else log_error("listing software packages", error);
     });
 }
 
 exports.software_publish_package = function(package_name, server, resolve, reject)
 {
   var package = gtswp.load(package_name);
- 
+
   console.log("publishing " + package.toString());
 
   var record = package.toMongo();
- 
+
   exports.config_put(
-    "packages/" + package.hashid, 
-    record, 
-    server, 
+    "packages/" + package.hashid,
+    record,
+    server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("publishing software package", error); 
+      else log_error("publishing software package", error);
     });
 }
 
 exports.software_get = function(urn, server, resolve, reject)
 {
-  exports.core_get("9", urn, server, 
+  exports.core_get("9", urn, server,
     function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("fetching software resources", error); 
+      else log_error("fetching software resources", error);
     });
 }
 
@@ -651,9 +652,9 @@ exports.software_reload_packages = function(server, resolve, reject)
 {
   exports.coap_put("software/reload", {}, server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("reloading software resources", error); 
+      else log_error("reloading software resources", error);
     });
 }
 
@@ -667,7 +668,7 @@ exports.software_deactivate = function(slot, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("activating software", "the specified slot is not available"); 
+      else log_error("activating software", "the specified slot is not available");
     }
     else
     {
@@ -682,22 +683,22 @@ exports.software_deactivate = function(slot, urn, server, resolve, reject)
       else if (!state[12])
       { //inactive
         if (reject) reject("software is not active");
-        else log_error("deactiviating software", "software is not active"); 
+        else log_error("deactiviating software", "software is not active");
       }
       else
       {
         //execute deactivate
-        exports.core_exec("9" + "/" + slot + "/11", null, urn, server, 
+        exports.core_exec("9" + "/" + slot + "/11", null, urn, server,
           function(response) {
             if (response.status == 200) console.log("software is now inactive");
             else console.log(response.text);
           },
-          function(error){ 
+          function(error){
             if (reject) reject(error);
-            else log_error("deactiviating software", error); 
+            else log_error("deactiviating software", error);
           });
       }
-    } 
+    }
   }, reject);
 }
 
@@ -710,7 +711,7 @@ exports.software_install = function(slot, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("activating software", "the specified slot is not available"); 
+      else log_error("activating software", "the specified slot is not available");
     }
     else
     {
@@ -725,27 +726,27 @@ exports.software_install = function(slot, urn, server, resolve, reject)
       else if (state[7] == 1)
       { //downloading
         if (reject) reject("software is currently downloading");
-        else log_error("activiating software", "software is currently downloading"); 
+        else log_error("activiating software", "software is currently downloading");
       }
       else if (state[7] == 4) //installed
-      { 
+      {
         console.log("software is already installed");
         if (reject) reject("software is already installed");
       }
       else if (state[7] == 3) //downloaded but not installed
       {
         exports.core_exec("9" + "/" + slot + "/4", null, urn, server, function(response) {
-         
+
           if (response.status == 200) console.log("software is now installed");
-          else console.log("failed to install software", response.text); 
+          else console.log("failed to install software", response.text);
 
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("installing software", error); 
+          else log_error("installing software", error);
         });
       }
-    } 
+    }
   }, reject);
 }
 
@@ -758,7 +759,7 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("activating software", "the specified slot is not available"); 
+      else log_error("activating software", "the specified slot is not available");
     }
     else
     {
@@ -773,12 +774,12 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
       else if (state[7] == 1)
       { //downloading
         if (reject) reject("software is currently downloading");
-        else log_error("activiating software", "software is currently downloading"); 
+        else log_error("activiating software", "software is currently downloading");
       }
       else if (state[12]) //active
       {
         //execute deactivate
-        exports.core_exec("9" + "/" + slot + "/11", null, urn, server, 
+        exports.core_exec("9" + "/" + slot + "/11", null, urn, server,
           function(response) {
             if (response.status == 200)
             {
@@ -786,9 +787,9 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
               exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
                 console.log("software is now uninstalled");
               },
-              function(error){ 
+              function(error){
                 if (reject) reject(error);
-                else log_error("uninstalling software", error); 
+                else log_error("uninstalling software", error);
               });
             }
             else
@@ -796,35 +797,35 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
               console.log(response.text);
             }
           },
-          function(error){ 
+          function(error){
             if (reject) reject(error);
-            else log_error("uninstalling software", error); 
+            else log_error("uninstalling software", error);
           });
       }
       else if (state[7] == 4) //installed
-      { 
+      {
         console.log("software is now inactive");
         exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
           if (response.status == 200) console.log("software is now uninstalled");
-          else console.log("failed to uninstall software", response.text); 
+          else console.log("failed to uninstall software", response.text);
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("uninstalling software", error); 
+          else log_error("uninstalling software", error);
         });
       }
       else if (state[7] == 3) //downloaded but not active
       {
         exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
           if (response.status == 200) console.log("software is now uninstalled");
-          else console.log("failed to uninstall software", response.text); 
+          else console.log("failed to uninstall software", response.text);
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("uninstalling software", error); 
+          else log_error("uninstalling software", error);
         });
       }
-    } 
+    }
   }, reject);
 }
 
@@ -838,7 +839,7 @@ exports.software_activate = function(slot, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("activating software", "the specified slot is not available"); 
+      else log_error("activating software", "the specified slot is not available");
     }
     else
     {
@@ -853,41 +854,41 @@ exports.software_activate = function(slot, urn, server, resolve, reject)
       else if (state[7] == 1)
       { //downloading
         if (reject) reject("software is currently downloading");
-        else log_error("activiating software", "software is currently downloading"); 
+        else log_error("activiating software", "software is currently downloading");
       }
       else if (state[7] == 3) //downloaded but not installed
       {
         //execute install
-        exports.core_exec("9" + "/" + slot + "/4", null, urn, server, 
+        exports.core_exec("9" + "/" + slot + "/4", null, urn, server,
           function(response) {
             console.log("software is now installed");
             exports.core_exec("9" + "/" + slot + "/10", null, urn, server, function(response) {
              if (response.status == 200) console.log("software is now active");
-             else console.log("failed to activiate software", response.text); 
+             else console.log("failed to activiate software", response.text);
             },
-            function(error){ 
+            function(error){
               if (reject) reject(error);
-              else log_error("activiating software", error); 
+              else log_error("activiating software", error);
             });
           },
-          function(error){ 
+          function(error){
             if (reject) reject(error);
-            else log_error("activiating software", error); 
+            else log_error("activiating software", error);
           });
       }
       else if (state[7] == 4) //installed
-      { 
+      {
         console.log("software is already installed");
         exports.core_exec("9" + "/" + slot + "/10", null, urn, server, function(response) {
           if (response.status == 200) console.log("software is now active");
-          else console.log("failed to activiate software", response.text); 
+          else console.log("failed to activiate software", response.text);
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("activiating software", error); 
+          else log_error("activiating software", error);
         });
       }
-    } 
+    }
   }, reject);
 }
 
@@ -900,7 +901,7 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("pushing software", "the specified slot is not available"); 
+      else log_error("pushing software", "the specified slot is not available");
     }
     else
     {
@@ -913,7 +914,7 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
         put_obj.id = 3;
         put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
         //write the package URI to the uri resource
-        exports.core_put("9" + "/" + slot + "/3", put_obj, urn, server, 
+        exports.core_put("9" + "/" + slot + "/3", put_obj, urn, server,
           function(response) {
             console.log(response.status);
             if (response.status == 200)
@@ -927,48 +928,48 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
               if (reject) reject(response);
             }
           },
-          function(error){ 
+          function(error){
             if (reject) reject(error);
-            else log_error("writing software URI", error); 
+            else log_error("writing software URI", error);
           });
       }
       else
       { //need to uninstall first
-        log_error("pushing software", "slot 0 has software installed, uninstall first", error); 
+        log_error("pushing software", "slot 0 has software installed, uninstall first", error);
       }
-    } 
+    }
   }, reject);
- 
+
 }
 
 exports.list_devices = function(server, resolve, reject)
 {
-  exports.core_get('', '', server, 
+  exports.core_get('', '', server,
     resolve,
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("listing devices", error); 
+      else log_error("listing devices", error);
     });
 }
 
 
 exports.device_get = function(urn, server, resolve, reject)
 {
-  exports.core_get("3", urn, server, 
+  exports.core_get("3", urn, server,
     function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("fetching device resources", error); 
+      else log_error("fetching device resources", error);
     });
 }
 
 exports.server_get = function(urn, server, resolve, reject)
 {
-  exports.core_get("1", urn, server, 
+  exports.core_get("1", urn, server,
     function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("fetching server resources", error); 
+      else log_error("fetching server resources", error);
     });
 }
 /////////////////////////////////////////////////////////////
@@ -1005,11 +1006,11 @@ exports.fw_result_to_string = function(state)
 
 exports.firmware_get = function(urn, server, resolve, reject)
 {
-  exports.core_get("5", urn, server, 
+  exports.core_get("5", urn, server,
     function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("fetching firmware resources", error); 
+      else log_error("fetching firmware resources", error);
     });
 }
 
@@ -1020,7 +1021,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
   exports.firmware_get(urn, server, function(repsonse){
     //console.log(JSON.stringify());
     var state = repsonse[0];
-    
+
     console.log("firmware is " + exports.fw_state_to_string(state));
 
     if ((state[3] == 0) || (state[3] == 2))//idle
@@ -1030,9 +1031,9 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
       put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
       console.log( put_obj.value);
       //write the package URI to the uri resource
-      exports.core_put("5/0/1", put_obj, urn, server, 
+      exports.core_put("5/0/1", put_obj, urn, server,
         function(response) {
-         
+
           if (response.status == 200)
           {
             //the package is now downloading.
@@ -1044,13 +1045,13 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
             if (reject) reject(response);
           }
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("writing package URI", error); 
+          else log_error("writing package URI", error);
         });
     }
     else
-    { 
+    {
       console.log("not idle");
     }
   }, reject);
@@ -1063,7 +1064,7 @@ exports.firmware_update = function(urn, server, resolve, reject)
   exports.firmware_get(urn, server, function(repsonse){
     var state = repsonse[0];
     console.log("firmware is " + exports.fw_state_to_string(state));
-   
+
     if (state[3] == 0)
     { //no package
       if (reject) reject("no firmware downloaded");
@@ -1072,25 +1073,25 @@ exports.firmware_update = function(urn, server, resolve, reject)
     else if (state[3] == 1)
     { //downloading
       if (reject) reject("Firmware is currently downloading");
-      else log_error("updating firmware", "software is currently downloading"); 
+      else log_error("updating firmware", "software is currently downloading");
     }
-    else if (state[3] == 2) //downloaded 
+    else if (state[3] == 2) //downloaded
     {
       //execute install
-      exports.core_exec("5/0/2", null, urn, server, 
+      exports.core_exec("5/0/2", null, urn, server,
         function(response) {
           if (response.status == 200) console.log("firmware has been updated, device is rebooting");
           if (resolve) resolve(response);
         },
-        function(error){ 
+        function(error){
           if (reject) reject(error);
-          else log_error("activiating software", error); 
+          else log_error("activiating software", error);
         });
     }
     else if (state[7] == 3) //installed
-    { 
+    {
       if (reject) reject("Firmware is currently updating");
-      else log_error("updating firmware", "firmware is currently updating"); 
+      else log_error("updating firmware", "firmware is currently updating");
     }
   }, reject);
 }
@@ -1105,13 +1106,13 @@ function make_bs_url(server)
 function make_bs_client_url(path, urn, server)
 {
   var url = make_bs_url(defaults.check_server_name(server));
-  if (urn != "") 
+  if (urn != "")
   {
     url += "/" + urn;
     if (path != "")
     {
        url += "/" + path;
-    } 
+    }
   }
   return url;
 }
@@ -1187,7 +1188,7 @@ exports.bs_delete= function(path, urn, server, resolve, reject)
 }
 
 
-function hexToBytes(hex) 
+function hexToBytes(hex)
 {
   for (var bytes = [], c = 0; c < hex.length; c += 2)
   {
@@ -1196,7 +1197,7 @@ function hexToBytes(hex)
   return bytes;
 }
 
-function strToBytes(str) 
+function strToBytes(str)
 {
   var codes = str.split("");
   for (var i = 0; i < codes.length; i++)
@@ -1219,9 +1220,9 @@ exports.security_list_endpoints = function(server, resolve, reject)
       if (reject) reject(response);
     }
   },
-  function(error){ 
+  function(error){
     if (reject) reject(error);
-    else log_error("listing endpoint security", error); 
+    else log_error("listing endpoint security", error);
   });
 }
 
@@ -1245,7 +1246,7 @@ exports.security_add_endpoint = function(PSK_bootstrap, PSK_core, urn, server, r
           },
           "1": {
               "uri": "coaps://[2001:db8::2]:5684/",
-              "securityMode": "PSK",            
+              "securityMode": "PSK",
               "serverPublicKeyOrId": [],
               "publicKeyOrId": [],
               "secretKey": [],
@@ -1264,7 +1265,7 @@ exports.security_add_endpoint = function(PSK_bootstrap, PSK_core, urn, server, r
   security_object.security[1].publicKeyOrId = strToBytes(urn);
   security_object.security[1].secretKey = hexToBytes(PSK_core);
 
-  exports.bs_post("", security_object, urn, server, 
+  exports.bs_post("", security_object, urn, server,
     function(response) {
       if (response.status == 200)
       {
@@ -1276,15 +1277,15 @@ exports.security_add_endpoint = function(PSK_bootstrap, PSK_core, urn, server, r
         if (reject) reject(response);
       }
     },
-    function(error){ 
+    function(error){
       if (reject) reject(error);
-      else log_error("adding endpoint security", error); 
+      else log_error("adding endpoint security", error);
     });
 }
 
 exports.security_delete_endpoint = function(urn, server, resolve, reject)
 {
-  exports.bs_delete("", urn, server, function(response) 
+  exports.bs_delete("", urn, server, function(response)
   {
     if (response.status == 204)
     {
@@ -1296,9 +1297,9 @@ exports.security_delete_endpoint = function(urn, server, resolve, reject)
       if (reject) reject(response);
     }
   },
-  function(error){ 
+  function(error){
     if (reject) reject(error);
-    else log_error("deleting security", error); 
+    else log_error("deleting security", error);
   });
 }
 

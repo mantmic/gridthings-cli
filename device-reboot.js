@@ -11,12 +11,12 @@ program
   .option('-v, --verbose', 'Be verbose')
   .action(function(urn, server) {
     wrongArguments = false;
-   
+
     if (program.verbose) {
       gtapi.log_level = 1;
     }
 
-    gtapi.core_exec('3/0/4', null, urn, server, function () {
+    gtapi.core_exec('3/0/4', '', urn, server, function () {
      console.info('endpoint ' + urn + " is rebooting");
     }, function (error) {
       Helpers.displayError(error);
