@@ -6,7 +6,7 @@ GridThings implements [Datagram Transport Layer Security](https://tools.ietf.org
 
 Security administrator must install the `gtca` command line tool from the github repository. This tool is used to create keys and certificates for different environments.
 
-## Create a Root CA for an trust zone
+## Create a Root CA for a trust zone
 
 A root CA is needed for each trust zone that device and server certificates will be generated for. 
 
@@ -85,7 +85,6 @@ This is caused by the wrong password in the `KEY_STORE_PASS` setting in the `.en
 Possibly the Alias password is not correct
 
 ## Add Device
-
 
 The basic steps to add a new device to the system are as follows:
 

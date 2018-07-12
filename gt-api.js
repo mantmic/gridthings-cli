@@ -759,7 +759,7 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
     if (!software_states[slot])
     {
       if (reject) reject("the specified slot is not available");
-      else log_error("activating software", "the specified slot is not available");
+      else log_error("uninstalling software", "the specified slot is not available");
     }
     else
     {
@@ -769,12 +769,12 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
       if (state[7] == 0)
       { //no package
         if (reject) reject("no software loaded");
-        else log_error("activiating software", "no software loaded");
+        else log_error("uninstalling software", "no software loaded");
       }
       else if (state[7] == 1)
       { //downloading
         if (reject) reject("software is currently downloading");
-        else log_error("activiating software", "software is currently downloading");
+        else log_error("uninstalling software", "software is currently downloading");
       }
       else if (state[12]) //active
       {
@@ -829,6 +829,40 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
   }, reject);
 }
 
+exports.software_cancel = function(slot, urn, server, resolve, reject)
+{
+  //first get the state
+  exports.software_get(urn, server, function(repsonse){
+    var software_states = repsonse;
+    if (!software_states[slot])
+    {
+      if (reject) reject("the specified slot is not available");
+      else log_error("cancelling software download", "the specified slot is not available");
+    }
+    else
+    {
+      var state = software_states[slot];
+      software_print_state("software in slot 0 is ", software_states[slot]);
+
+      if (state[7] == 1)
+      { //downloading
+        //execute uninstall
+        exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
+          console.log("software download is cancelled");
+        },
+        function(error){
+          if (reject) reject(error);
+          else log_error("cancelling software download", error);
+        });
+      }
+      else if (state[12]) //active
+      {
+        if (reject) reject("software is not currently downloading");
+        else log_error("cancelling software download", "software is not currently downloading");
+      }
+    }
+  }, reject);
+}
 
 exports.software_activate = function(slot, urn, server, resolve, reject)
 {
@@ -1029,7 +1063,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
       var put_obj = {};
       put_obj.id = 1;
       put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
-      console.log( put_obj.value);
+     
       //write the package URI to the uri resource
       exports.core_put("5/0/1", put_obj, urn, server,
         function(response) {
@@ -1092,6 +1126,33 @@ exports.firmware_update = function(urn, server, resolve, reject)
     {
       if (reject) reject("Firmware is currently updating");
       else log_error("updating firmware", "firmware is currently updating");
+    }
+  }, reject);
+}
+
+exports.firmware_cancel = function(urn, server, resolve, reject)
+{
+  //first get the state
+  exports.firmware_get(urn, server, function(repsonse){
+    var state = repsonse[0];
+    console.log("firmware is " + exports.fw_state_to_string(state));
+
+    if (state[3] == 1)
+    { //downloading
+      exports.core_exec("5/0/30006", null, urn, server,
+      function(response) {
+        if (response.status == 200) console.log("firmware download has been cancelled");
+        if (resolve) resolve(response);
+      },
+      function(error){
+        if (reject) reject(error);
+        else log_error("cancelling firmware download", error);
+      });
+    }
+    else
+    {
+      if (reject) reject("Firmware is not downloading");
+      else log_error("cancelling firmware download", "Firmware is not downloading");
     }
   }, reject);
 }
