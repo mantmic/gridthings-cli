@@ -139,7 +139,8 @@ exports.core_get = function(path, urn, server, resolve, reject)
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
+    else log_error("GET " + url, e);
   }
 }
 
@@ -164,7 +165,8 @@ exports.core_exec= function(path, body, urn, server, resolve, reject)
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
+    else log_error("EXEC " + url, e);
   }
 }
 
@@ -190,7 +192,8 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
+    else log_error("PUT " + url, e);
   }
 }
 
@@ -996,6 +999,17 @@ exports.device_get = function(urn, server, resolve, reject)
       else log_error("fetching device resources", error);
     });
 }
+
+exports.device_system_get = function(urn, server, resolve, reject)
+{
+  exports.core_get("30006", urn, server,
+    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(error){
+      if (reject) reject(error);
+      else log_error("fetching device system resources", error);
+    });
+}
+
 
 exports.server_get = function(urn, server, resolve, reject)
 {

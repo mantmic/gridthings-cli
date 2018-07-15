@@ -189,6 +189,24 @@ module.exports = {
 
   displayError(context, error) 
   {
-    console.error('error ' + context + "\n" + error.status + " " + error.response.text);
+    try
+    {
+      if (error.response.text.includes("returned unexpected response code [5.01]"))
+      {
+        console.error("Action is not supported on the device");
+      }
+      else if (error.response.text.includes("returned unexpected response code [4.06]"))
+      {
+        console.error("Device is unable to action the request at this time");
+      }
+      else
+      {
+        console.error('error ' + context + "\n" + error.status + " " + error.response.text);
+      }
+    }
+    catch(e)
+    {
+      console.error(context + "\n" + error);
+    }
   }
 };
