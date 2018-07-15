@@ -122,9 +122,31 @@ gtcli software deactivate 0 urn:imei:355922062171570 .
 gtcli software uninstall 0 urn:imei:355922062171570 .
 ```
 
-To get all device and resources from a default server
+
+
+## Stream of lwm2m resources
+
+To get all resource from a device from a default server
+
 ```
-gtcli stream . .
+gtcli stream urn:imei:352753090104975 . . .
+```
+
+Example output:
+
+```
+$ gtcli stream urn:imei:352753090104975 . . .
+Created partition receiver: 1
+Created partition receiver: 0
+DEREGISTRATION urn:imei:352753090104975 2018-07-12T02:33:09.235077  lifetime 3600
+REGISTRATION urn:imei:352753090104975 2018-07-12T02:33:09.243707  lifetime 3600
+urn:imei:352753090104975  Thu Jul 12 2018 12:33:15 GMT+1000 (AEST)  undefined/undefined/undefined [object Object]
+urn:imei:352753090104975  Thu Jul 12 2018 12:30:41 GMT+1000 (AEST)  30001/321/4 true
+urn:imei:352753090104975  Thu Jul 12 2018 12:35:11 GMT+1000 (AEST)  30005/0/0/0 2,-125,25,1,65,3,-127,-125,26,91,70,-67,81,1,0
+urn:imei:352753090104975  Thu Jul 12 2018 12:30:41 GMT+1000 (AEST)  30001/327/9030/0  478
+urn:imei:352753090104975  Thu Jul 12 2018 12:30:41 GMT+1000 (AEST)  30001/342/4 true
+urn:imei:352753090104975  Thu Jul 12 2018 12:35:11 GMT+1000 (AEST)  30005/0/0/2 2,-125,25,1,86,3,-127,-125,26,91,7
+... futher stream output
 ```
 
 ## Remote Update Of Device Firmware
