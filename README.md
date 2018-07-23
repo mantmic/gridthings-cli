@@ -129,7 +129,8 @@ gtcli software uninstall 0 urn:imei:355922062171570 .
 To get all resource from a device from a default server
 
 ```
-gtcli stream urn:imei:352753090104975 . . .
+DID=urn:imei:352753090104975 # Device ID
+gtcli stream ${DID} . .
 ```
 
 Example output:
