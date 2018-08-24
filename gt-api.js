@@ -972,7 +972,7 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
       }
       else
       { //need to uninstall first
-        log_error("pushing software", "slot 0 has software installed, uninstall first", error);
+        log_error("pushing software", "slot 0 has software installed, uninstall first");
       }
     }
   }, reject);

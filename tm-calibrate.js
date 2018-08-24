@@ -4,6 +4,12 @@ var program = require('commander');
 var gtapi = require('./gt-api.js');
 var Helpers = require('./dred-helpers.js');
 var Spinner = require('cli-spinner').Spinner;
+var prompt = require('prompt');
+var colors = require("colors/safe");
+
+prompt.message = ""
+prompt.delimiter = ""
+prompt.start();
 
 var wrongArguments = true;
 
@@ -44,11 +50,35 @@ program
       gtapi.core_exec('32001/' + phase_instance + '/19', null, urn, server, function (res) {
         console.info("cleared existing calibration");
         gtapi.core_exec('32001/' + phase_instance + '/21', null, urn, server, function (res) {
-
           var spinner = new Spinner('calibrating (wait 60s).. %s');
           spinner.setSpinnerString('|/-\\');
           spinner.start();
-          setTimeout(function(){spinner.stop(false);console.info("done");}, 60000);
+          setTimeout(function()
+          {
+            spinner.stop(false);console.info("done");
+          
+            prompt.get(
+            {
+              properties: {
+                confirm: {
+                  description: colors.green("now set the current to 1A and voltage to 200v and press enter to continue")
+                }
+              }
+            }, function (err, result) 
+            {
+              spinner = new Spinner('calibrating offset.. %s');
+              spinner.setSpinnerString('|/-\\');
+              spinner.start();
+              gtapi.core_exec('32001/' + phase_instance + '/30', null, urn, server, function (res) {
+                setTimeout(function()
+                {
+                  spinner.stop(false);console.info("done");
+                }, 1000);
+              }, function (error) {
+                Helpers.displayError("calibrating transformer monitor offset" + phase + " phase", error);
+              });
+            });
+          }, 60000);
         }, function (error) {
           Helpers.displayError("calibrating transformer monitor " + phase + " phase", error);
         });
