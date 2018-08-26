@@ -67,6 +67,10 @@ function log_error(context, err)
     }
   }
   else if (err.code) console.log((err.code == "ECONNREFUSED" ? "connection refused" : err.code) + " " + err.address);
+  else if (err.includes("504 Gateway Time-out"))
+  {
+    console.log("timeout waiting for response");
+  }
   else console.log(err);
 }
 
