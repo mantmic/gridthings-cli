@@ -83,12 +83,12 @@ program
                   setTimeout(function()
                   {
                     spinner.stop(false);console.info("done");
-                  }, 1000);
+                  }, 11000);
                 }, function (error) {
                   Helpers.displayError("calibrating transformer monitor offset" + phase + " phase", error);
                 });
               });
-            }, 60000);
+            }, 63000);
           }, function (error) {
             Helpers.displayError("calibrating transformer monitor " + phase + " phase", error);
           });
