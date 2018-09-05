@@ -35,6 +35,14 @@ function print_transformer_monitor(lm_object, urn)
   console.info("  Energy Conversion Constant:      " + lm_resources[20]);
   console.info("  Context:                         " + lm_resources[21]);
   console.info("  Temperature:                     " + lm_resources[22]/100 + "°C");
+ 
+  console.info("  IARMS                            " + lm_resources[24]/100 + "A");
+  console.info("  IBRMS                            " + lm_resources[25]/100 + "A");
+  console.info("  ICRMS                            " + lm_resources[26]/100 + "A");
+  console.info("  INRMS                            " + lm_resources[27]/100 + "A");
+  console.info("  VARMS                            " + lm_resources[28]/100 + "V");
+  console.info("  VBRMS                            " + lm_resources[29]/100 + "V");
+  console.info("  VCRMS                            " + lm_resources[30]/100 + "V");
 }
 
 program
