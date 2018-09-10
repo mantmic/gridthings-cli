@@ -42,16 +42,21 @@ Currently the CLI doesn't support providing a passphrase for the client certific
 ```
 openssl rsa -in server-01.gridthin.gs-client.key -out server-01.gridthin.gs-client.key
 ```
+## List servers
+
+To list the configured servers run the following
+```
+gtcli environment list
+```
+
 
 ## Setup default server
 
-Add a file called `defaults` into `~/.gtcli` with the following:
+Set the default server with the environment set command 
+```
+gtcli environment set server-01.gridthin.gs
+```
 
-```
-{
-  "server" : "server-01.gridthin.gs"
-}
-```
 
 ### Field definitions
 
