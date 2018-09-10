@@ -27,3 +27,12 @@ exports.get_config = function()
 {
   return config;
 }
+
+exports.set_config = function(config){
+  fs.writeFile(defaults_path,JSON.stringify(config), function(err) {
+    if(err) {
+        return console.log(err);
+    }
+    console.log("defaults saved");
+  });
+}

@@ -49,7 +49,7 @@ function print_record(endpoint, record)
     {
       if ((record.type == "REGISTRATION") || (record.type == "DEREGISTRATION"))
       {
-         console.log(record.type + " " + record.endpoint + "\t" + record.timestamp + "\t" + "lifetime " + record.data.lifetime); 
+         console.log(record.type + " " + record.endpoint + "\t" + record.timestamp + "\t" + "lifetime " + record.data.lifetime);
       }
       else if (record.type == "COAPMSG")
       {
@@ -59,14 +59,14 @@ function print_record(endpoint, record)
       {
 
       }
-      else 
+      else
       {
         var timestamp = Date.parse(record.timestamp + "+0000");
         timestamp = program.utc ? new Date(timestamp).toUTCString() : new Date(timestamp).toString();
-        
-        console.log(record.endpoint + "\t" + 
-           timestamp + "\t" + record.object_id + "/" + 
-          record.object_instance_id + "/" + record.resource_id + 
+
+        console.log(record.endpoint + "\t" +
+           timestamp + "\t" + record.object_id + "/" +
+          record.object_instance_id + "/" + record.resource_id +
           ((record.resource_instance_id != null) ? "/"+record.resource_instance_id : "") + "\t" +
           record.data);
       }
@@ -85,7 +85,7 @@ function get_jwt(jwt_secret)
   return jwt.compact();
 }
 
-function ws_stream(endpoint, resource, server, jwt_secret) 
+function ws_stream(endpoint, resource, server, jwt_secret)
 {
   var certs = gtapi.get_certs(server);
   var s = make_ws_url(server, get_jwt(jwt_secret));
@@ -94,10 +94,10 @@ function ws_stream(endpoint, resource, server, jwt_secret)
   var ws = new WebSocket(
     s,
     { ca : certs.ca, key: certs.key, cert: certs.crt});
-  
+
 
   ws.on('open', function open() {
-    
+
   });
 
   ws.on('error', function error(err) {
@@ -115,16 +115,16 @@ function ws_stream(endpoint, resource, server, jwt_secret)
 //  "processId":36,
 //  "channel":"records",
 //  payload":"{\"timestamp\":\"2017-12-07T08:51:49\",\"endpoint\":\"urn:ssni:001e0029573650112032353\",\"object_id\":30001,\"object_instance_id\":125,\"resource_id\":4,\"resource_instance_id\":null,\"data\":false}"}
-function eventhub_stream(endpoint, resource, connStr) 
+function eventhub_stream(endpoint, resource, connStr)
 {
   var EventHubClient = require('azure-event-hubs').Client;
 
-  var printError = function (err) 
+  var printError = function (err)
   {
     console.log(err.message);
   };
 
-  var printMessage = function (message) 
+  var printMessage = function (message)
   {
     try
     {
@@ -153,16 +153,16 @@ function eventhub_stream(endpoint, resource, connStr)
 
 }
 
-function kinesis_stream(endpoint, resource, server) 
-{ 
+function kinesis_stream(endpoint, resource, server)
+{
   var options = {}
   if (program.verbose) options.logger = winston;
 
   var server_name = defaults.check_server_name(server).split(".")[0];
   const client = new AWS.Kinesis()
-  
-  options.interval = 1000;  
- 
+
+  options.interval = 1000;
+
   const reader = new KinesisReadable(client, server_name + "-records", options)
   reader.on('data', function(record_Buffer)
   {
@@ -210,11 +210,9 @@ if (typeof server_config === 'undefined')
 else
 {
   if (server_config.stream_reader == "kinesis") kinesis_stream(the_endpoint, the_resource, the_server);
-  else if (server_config.stream_reader == "eventhub") 
+  else if (server_config.stream_reader == "eventhub")
   {
     eventhub_stream(the_endpoint, the_resource, server_config.event_hub_connection_string);
   }
   else ws_stream(the_endpoint, the_resource, the_server, server_config.jwt_secret);
 }
-
-
