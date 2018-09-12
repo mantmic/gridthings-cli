@@ -13,16 +13,16 @@ function time_to_string(ct)
   return date.toString();
 }
 
-function devices(server) 
-{    
-  if (program.verbose) 
+function devices(server)
+{
+  if (program.verbose)
   {
     gtapi.log_level = 1;
   }
-  
-  print_json = false;
+
+  print_json = (program.json == true);
   gtapi.list_devices(server, function(response)
-  {  
+  {
     if (response.status == 200)
     {
       var devices = JSON.parse(response.text);
@@ -55,5 +55,5 @@ program
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(server) { the_server = server; })
   .parse(process.argv);
-  
+
 devices(the_server == null ? "." : the_server);

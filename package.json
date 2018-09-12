@@ -99,7 +99,10 @@
     "gtcli-lm-set": "./lm-set.js",
     "gtcli-delivery": "./delivery.js",
     "gtcli-delivery-show": "./delivery-show.js",
-    "gtcli-delivery-set": "./delivery-set.js"
+    "gtcli-delivery-set": "./delivery-set.js",
+    "gtcli-environment":"./environment.js",
+    "gtcli-environment-list":"./environment-list.js",
+    "gtcli-environment-set":"./environment-set.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"

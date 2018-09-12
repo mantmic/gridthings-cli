@@ -24,7 +24,8 @@ program
  .command('lm',       'Configure the IoT Line Monitor for common usage scenarios (requires Line Monitor application to be loaded on the Gridthings Core)')
  .command('tm',       'Configure the IoT Transformer Monitor for common usage scenarios (requires Transformer Monitor (slim or cal) application to be loaded on the Gridthings Core)')
  .command('reboot',   'Reboot the specified endpoint')
- // .on('command:*', function() 
+ .command('environment', 'Manage the accessible Gridthings environments')
+ // .on('command:*', function()
  // {
  //     program.help();
  //  })
@@ -39,5 +40,3 @@ if (NO_COMMAND_SPECIFIED) {
   // e.g. display usage
   program.help();
 }
-
-  
