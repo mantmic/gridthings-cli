@@ -3,6 +3,7 @@
 var program = require('commander');
 
 var gtapi = require('./gt-api.js');
+var helpers = require('./helpers.js');
 
 program
   .arguments('<urn> [server]')
@@ -20,8 +21,26 @@ program
       }
       else
       {
-        console.log(response.status);
+        if (response.status == 200) 
+        {
+          console.log("polling " + urn);
+        }
+        else
+        {
+          console.log(response.status + " " + response.text);
+        }
       }
-    })
+    }, 
+    function(error)
+    {
+      if (error.status == 404)
+      {
+        console.log("The gt-edge service is not available");
+      }
+      else
+      {
+        helpers.display_error("polling SSN end point", error);
+      }
+    });
   })
   .parse(process.argv);

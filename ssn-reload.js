@@ -4,6 +4,7 @@ var program = require('commander');
 
 var gtapi = require('./gt-api.js');
 var the_server = null;
+var helpers = require('./helpers.js');
 
 function reload(server) 
 {
@@ -18,8 +19,19 @@ function reload(server)
     }
     else
     {
-      console.log(response.status);
+      if (response.status == 200) 
+      {
+        console.log("OK");
+      }
+      else
+      {
+        console.log(response.status + " " + response.text);
+      }
     }
+  }, 
+  function(error)
+  {
+    helpers.display_error("reloading endpoints", error);
   });
 }
 

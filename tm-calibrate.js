@@ -55,54 +55,81 @@ program
 
         var i_nominal = lm_resources[22];
         var v_nominal = lm_resources[24];
-        gtapi.core_exec('32001/' + phase_instance + '/19', null, urn, server, function (res) {
-          console.info("cleared existing calibration");
-
+        var i_offset = lm_resources[23];
+        var v_offset = lm_resources[25];
         prompt.get(
-          {
-            properties: {
-              confirm: {
-                description: colors.green("set the current to " + Math.floor(i_nominal/1000) + "A and voltage to " + Math.floor(v_nominal / 1000) + "v and press enter to continue")
-              }
+        {
+          properties: {
+            confirm: {
+              description: colors.green("set the current to " + Math.floor(i_nominal/1000) + "A and voltage to " + Math.floor(v_nominal / 1000) + "v, at Lagging PF=0.5 such that Active and Reactive Energies are Positive and press enter to continue")
             }
-          }, function (err, result) 
-          {
-            gtapi.core_exec('32001/' + phase_instance + '/21', null, urn, server, function (res) {
-              var spinner = new Spinner('calibrating (wait 60s).. %s');
-              spinner.setSpinnerString('|/-\\');
-              spinner.start();
-              setTimeout(function()
-              {
-                spinner.stop(false);console.info("done");
-              
-                prompt.get(
-                {
-                  properties: {
-                    confirm: {
-                      description: colors.green("now set the current to 1A and voltage to 200v and press enter to continue")
-                    }
-                  }
-                }, function (err, result) 
-                {
-                  spinner = new Spinner('calibrating offset.. %s');
-                  spinner.setSpinnerString('|/-\\');
-                  spinner.start();
-                  gtapi.core_exec('32001/' + phase_instance + '/30', null, urn, server, function (res) {
+          }
+        }, function() 
+        {
+          var spinner = new Spinner('calibrating current, voltage, and phase angle... %s');
+          spinner.setSpinnerString('|/-\\');
+          spinner.start();
+
+          gtapi.core_exec('32001/' + phase_instance + '/19', null, urn, server, function (res) {
+            
+            setTimeout(function()
+            {
+              spinner.stop(false);console.info("done");
+
+              // spinner = new Spinner('waiting for DSP to boot.. %s');
+              // spinner.setSpinnerString('|/-\\');
+              // spinner.start();
+              // setTimeout(function()
+              // {
+
+                // prompt.get(
+                // {
+                //   properties: {
+                //     confirm: {
+                //       description: colors.green("set the current to " + Math.floor(i_nominal/1000) + "A and voltage to " + Math.floor(v_nominal / 1000) + "v and press enter to continue")
+                //     }
+                //   }
+                // }, function (err, result) 
+                // {
+                  gtapi.core_exec('32001/' + phase_instance + '/21', null, urn, server, function (res) {
+                    spinner = new Spinner('accumulating power for 60s... %s');
+                    spinner.setSpinnerString('|/-\\');
+                    spinner.start();
                     setTimeout(function()
                     {
                       spinner.stop(false);console.info("done");
-                    }, 11000);
+                    
+                      prompt.get(
+                      {
+                        properties: {
+                          confirm: {
+                            description: colors.green("now set the current to " + Math.floor(i_offset/1000) + "A and voltage to " + Math.floor(v_offset / 1000) + "v and press enter to continue")
+                          }
+                        }
+                      }, function (err, result) 
+                      {
+                        spinner = new Spinner('calibrating voltage and current offsets... %s');
+                        spinner.setSpinnerString('|/-\\');
+                        spinner.start();
+                        gtapi.core_exec('32001/' + phase_instance + '/30', null, urn, server, function (res) {
+                          setTimeout(function()
+                          {
+                            spinner.stop(false);console.info("done");
+                          }, 6000);
+                        }, function (error) {
+                          Helpers.displayError("calibrating transformer monitor offset " + phase + " phase", error);
+                        });
+                      });
+                    }, 63000);
                   }, function (error) {
-                    Helpers.displayError("calibrating transformer monitor offset" + phase + " phase", error);
+                    Helpers.displayError("accumulating power for " + phase + " phase", error);
                   });
-                });
-              }, 63000);
-            }, function (error) {
-              Helpers.displayError("calibrating transformer monitor " + phase + " phase", error);
-            });
+
+             // });
+            }, 30000);
+          }, function (error) {
+              Helpers.displayError("calibrating current, voltage, and phase angle for " + phase + " phase", error);
           });
-        }, function (error) {
-            Helpers.displayError("clearing transformer monitor calibration for " + phase + " phase", error);
         });
       });
     }

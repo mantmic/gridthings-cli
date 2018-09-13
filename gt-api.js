@@ -137,7 +137,10 @@ exports.core_get = function(path, urn, server, resolve, reject)
     var url = make_client_url(path, urn, server);
     log_debug("GET " + url);
     request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
@@ -163,7 +166,10 @@ exports.core_exec= function(path, body, urn, server, resolve, reject)
       .set('Content-Type', 'application/json')
       .send(body)
       .end(function(error, response) {
-        if (error) reject(error);
+        if (error)
+        {
+          if (reject) reject(error);
+        }
         else resolve(response);
       });
   }
@@ -190,7 +196,10 @@ exports.core_put= function(path, body, urn, server, resolve, reject)
       .set('Content-Type', 'application/json')
       .send(body)
       .end(function(error, response) {
-        if (error) reject(error);
+        if (error)
+        {
+          if (reject) reject(error);
+        }
         else resolve(response);
       });
   }
@@ -225,13 +234,16 @@ exports.coap_put = function(path, body, server, resolve, reject)
     var url = make_coap_url(path, server);
     log_debug("PUT " + url);
     request.put(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -245,13 +257,16 @@ exports.coap_post = function(path, body, query, server, resolve, reject)
 
     log_debug("POST " + url);
     request.post(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -266,13 +281,16 @@ exports.config_put = function(path, body, server, resolve, reject)
     var url = make_config_url(path, server);
     log_debug("PUT " + url);
     request.put(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -284,13 +302,16 @@ exports.config_post = function(path, body, server, resolve, reject)
     var url = make_config_url(path, server);
     log_debug("POST " + url);
     request.post(url).ca(certs.ca).cert(certs.crt).key(certs.key).send(body).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -303,13 +324,16 @@ exports.config_get = function(path, query, server, resolve, reject)
     url += add_query(query);
     log_debug("GET " + url);
     request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -322,13 +346,16 @@ exports.config_delete = function(path, query, server, resolve, reject)
     url += add_query(query);
     log_debug("DELETE " + url);
     request.delete(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -352,13 +379,16 @@ exports.history_exec= function(path, body, server, resolve, reject)
       .set('Content-Type', 'application/json')
       .send(body)
       .end(function(error, response) {
-        if (error) reject(error);
+        if (error)
+        {
+          if (reject) reject(error);
+        }
         else resolve(response);
       });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 
@@ -372,13 +402,16 @@ exports.history_get = function(path, query, server, resolve, reject)
     url += add_query(query);
     log_debug("GET " + url);
     request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
-      if (error) reject(error);
+      if (error)
+      {
+        if (reject) reject(error);
+      }
       else resolve(response);
     });
   }
   catch (e)
   {
-    reject(e);
+    if (reject) reject(e);
   }
 }
 

@@ -3,6 +3,7 @@
 var program = require('commander');
 
 var gtapi = require('./gt-api.js');
+var helpers = require('./helpers.js');
 
 var the_server = null;
 // {
@@ -30,15 +31,30 @@ function list(server)
       }
       else
       {
-        for (var ep = 0; ep < endpoints.length; ep++)
+        if (endpoints.length == 0)
         {
-          console.log(endpoints[ep]);
+          console.log("No SSN endpoints are configured");
+        }
+        else
+        {
+          for (var ep = 0; ep < endpoints.length; ep++)
+          {
+            console.log(endpoints[ep]);
+          }
         }
       }
     }, 
-    function(error){
-      console.log(error);
-    })
+    function(error)
+    {
+      if (error.status == 404)
+      {
+        console.log("No SSN endpoints are configured");
+      }
+      else
+      {
+        helpers.display_error("getting SSN endpoints", error);
+      }
+    });
   }
 
 program
