@@ -66,12 +66,12 @@ program
         for (var instance_id = 0; instance_id < 4; instance_id++)
         {
           var state = response[instance_id];
-         
+
           console.log("Software Instance " + instance_id + ":");
 
           console.log("  Name:             " + (state[0] == "" ? "(none)" : state[0]));
           console.log("  Version:          " + (state[1] == "" ? "(none)" : state[1]));
-          
+
 
           console.log("  Update state:     " + gtapi.update_state_to_string(state[7]));
           console.log("  Update result:    " + gtapi.update_result_to_string(state[9]));

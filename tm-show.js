@@ -6,6 +6,7 @@ var Helpers = require('./dred-helpers.js');
 
 var wrongArguments = true;
 
+
 function print_transformer_monitor(lm_object, urn)
 {
   var lm_resources = {};
@@ -35,7 +36,7 @@ function print_transformer_monitor(lm_object, urn)
   console.info("  Energy Conversion Constant:      " + lm_resources[20]);
   console.info("  Context:                         " + lm_resources[21]);
   console.info("  Temperature:                     " + lm_resources[22]/100 + "°C");
- 
+
   console.info("  IARMS                            " + lm_resources[24]/100 + "A");
   console.info("  IBRMS                            " + lm_resources[25]/100 + "A");
   console.info("  ICRMS                            " + lm_resources[26]/100 + "A");
@@ -51,7 +52,7 @@ program
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(urn, server) {
     wrongArguments = false;
-   
+
     if (program.verbose) {
       gtapi.log_level = 1;
     }
@@ -60,7 +61,7 @@ program
       var tm_object = JSON.parse(tm_res.text);
       if (program.json)
       {
-        var json_obj = { "transformer_monitor" : lm_object};
+        var json_obj = { "transformer_monitor" : tm_object};
         console.info(JSON.stringify(json_obj, null, 2));
       }
       else

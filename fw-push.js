@@ -16,7 +16,7 @@ program
 
     gtapi.firmware_push(package, urn, server, function(response){
      if (print_json) console.log(JSON.stringify(response));
-     else 
+     else
      {
         console.log(response.status);
      }

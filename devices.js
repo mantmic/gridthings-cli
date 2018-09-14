@@ -23,20 +23,15 @@ function devices(server)
   print_json = (program.json == true);
   gtapi.list_devices(server, function(response)
   {
-    if (response.status == 200)
-    {
+    if (response.status == 200) {
       var devices = JSON.parse(response.text);
-      if (devices.length == 0) console.log("no devices are registered");
-      else
-      {
-        for (var i = 0; i < devices.length; i++)
-        {
-          if (print_json)
-          {
-            console.log(devices[i]);
-          }
-          else
-          {
+      if (devices.length == 0){
+        console.log("no devices are registered");
+      } else {
+        if (print_json) {
+          console.log(JSON.stringify(devices, null, 2));
+        } else {
+          for (var i = 0; i < devices.length; i++){
             console.log(devices[i].endpoint + " last updated " + time_to_string(devices[i].lastUpdate));
           }
         }

@@ -18,43 +18,45 @@ var gtswp = require('./gt-software-package.js');
 
 var the_server = null;
 
-function list(server) 
+function list(server)
 {
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
     gtapi.software_list_packages(server, function(response)
     {
-      try
-      {
+      try {
         var contents = JSON.parse(response.text);
         var json_values = [];
-        for (var package = 0; package < contents.length; package++)
-        {
-          if (!contents[package]._id["$oid"])
-          {
+        for (var package = 0; package < contents.length; package++){
+          if (!contents[package]._id["$oid"]){
             var p = gtswp.from_mongo(contents[package]);
-            if (print_json)
-            {
+            if (print_json){
               json_values.push(p);
             }
-            else
-            {
+            else {
               console.log(p.toString());
               console.log("");
             }
           }
         }
-
-        if (print_json)
-        {
-          console.log(JSON.stringify(json_values, null, 2));
+        if (print_json){
+          //get rid of the junk at the end of some of the strings
+          var find = '\u0000';
+          var re = new RegExp(find, 'g');
+          let data = json_values.map(function(s){
+            var d = s ;
+            d.version = s.version.replace(re, '').trim() ;
+            d.name = s.name.replace(re,'').trim();
+            //return(s);
+            return(d);
+          })
+          console.log(JSON.stringify(data, null, 2));
         }
-
       }
       catch(e)
       {
         console.log(e);
-      }  
+      }
     })
   }
 
@@ -66,4 +68,3 @@ program
   .parse(process.argv);
 
 list(the_server == null ? "." : the_server);
-
