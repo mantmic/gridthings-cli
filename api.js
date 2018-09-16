@@ -10,7 +10,7 @@ var bodyParser = require('body-parser');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;        // set our port
+var port = process.env.PORT || 8889;        // set our port
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -18,7 +18,7 @@ var router = express.Router();              // get an instance of the express Ro
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-    res.json({ message: 'hooray! welcome to our api!' });
+    res.json({ message: 'Gridthings API' });
 });
 
 // more routes for our API will happen here
@@ -30,7 +30,7 @@ app.use('/', router);
 // START THE SERVER
 // =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
+console.log('GT Api running on port ' + port);
 
 
 //first few routes as a POC
@@ -98,4 +98,17 @@ router.get('/software/autodeploy/:endpoint', function(req, res) {
   ;
   //console.log(fsm);
   fsm.begin();
+});
+
+
+//devices
+router.get('/devices', function(req, res) {
+  gtapi.list_devices(".", function(response){
+    if (response.status == 200) {
+      var devices = JSON.parse(response.text);
+      res.json(devices);
+    } else {
+      res.json([]);
+    }
+  });
 });

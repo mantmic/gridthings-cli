@@ -21,8 +21,7 @@ function devices(server)
   }
 
   print_json = (program.json == true);
-  gtapi.list_devices(server, function(response)
-  {
+  gtapi.list_devices(server, function(response){
     if (response.status == 200) {
       var devices = JSON.parse(response.text);
       if (devices.length == 0){
@@ -37,8 +36,7 @@ function devices(server)
         }
       }
     }
-    else
-    {
+    else {
       console.log(response.status + " " + response.text);
     }
   });

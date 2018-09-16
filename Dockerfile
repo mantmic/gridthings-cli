@@ -8,6 +8,6 @@ COPY ./ /gridthings-cli/
 WORKDIR /gridthings-cli
 RUN (npm install -g)
 
-EXPOSE 8080
+EXPOSE 8889
 
 CMD [ "node", "api.js" ]
