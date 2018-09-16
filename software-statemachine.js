@@ -56,7 +56,8 @@ exports.SoftwareUpdate = StateMachine.factory({
        activatedSlots:[],
        server:options.server,
        printJson:options.printJson,
-       jsonOutput:[]
+       jsonOutput:[],
+       finishCallback:options.callback == null ? function(data){console.log(JSON.stringify(data, null, 2));} : options.callback
      })
    },
    transitions: [
@@ -210,7 +211,7 @@ exports.SoftwareUpdate = StateMachine.factory({
      //methods on transitioning
      onFinish:function(){
        if(this.printJson){
-         console.log(JSON.stringify(this.jsonOutput, null, 2));
+         this.finishCallback(this.jsonOutput);
        }
      },
      //normal function to push original version
