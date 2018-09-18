@@ -10,4 +10,5 @@ program
   .command('deactivate','Deactivate an application on an endpoint')
   .command('uninstall', 'Uninstall an application from an endpoint')
   .command('install',   'Install an application onto an endpoint')
+  .command('autodeploy',   'Run automated software deployment of an application onto an endpoint')
   .parse(process.argv);

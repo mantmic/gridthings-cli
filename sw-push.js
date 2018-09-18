@@ -16,7 +16,7 @@ program
 
     gtapi.software_push(slot, package, urn, server, function(response){
       if (print_json) console.log(JSON.stringify(response, null, 2));
-      else 
+      else
       {
         console.log(response.status);
       }
