@@ -3,7 +3,7 @@
 var program = require('commander');
 
 var gtapi = require('./gt-api.js');
-
+var helpers = require('./helpers.js');
 // {
 //   "_exceptions":[
 //     {
@@ -32,8 +32,26 @@ program
       }
       else
       {
-        console.log(response.status + " " + response.text);
+        if (response.status == 204)
+        {
+          console.log("OK");
+        }
+        else
+        {
+          console.log(response.status + " " + response.text);
+        }
       }
-    })
+    },
+    function(error)
+    {
+      if (error.status == 404)
+      {
+        console.log("No SSN endpoints are configured");
+      }
+      else
+      {
+        helpers.display_error("getting SSN endpoints", error);
+      }
+    });
   })
   .parse(process.argv);
