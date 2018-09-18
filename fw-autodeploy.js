@@ -5,14 +5,13 @@ var packageStatemachine = require('./package-statemachine.js') ;
 
 
 program
-  //.arguments('<slot> <package> <urn> [server]')
-  .arguments('<slot> <package> <urn> [server]')
+  //.arguments('<package> <urn> [server]')
+  .arguments('<package> <urn> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
-  .action(function(slot, package, urn, server) {
-    var fsm = new packageStatemachine.SoftwareUpdate({
+  .action(function(package, urn, server) {
+    var fsm = new packageStatemachine.FirmwareUpdate({
       endpoint:urn,
-      targetSlot:slot,
       targetVersion:package,
       server:server,
       printJson:program.json

@@ -771,7 +771,7 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 0)
       { //no package
@@ -792,7 +792,7 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
             {
               console.log("application is now inactive");
               exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
-                console.log("software is now uninstalled");
+                resolve("software is now uninstalled");
               },
               function(error){
                 if (reject) reject(error);
@@ -1081,7 +1081,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
       var put_obj = {};
       put_obj.id = 1;
       put_obj.value = "coap://" + defaults.check_server_name(server) + ":5433/" + package;
-     
+
       //write the package URI to the uri resource
       exports.core_put("5/0/1", put_obj, urn, server,
         function(response) {
@@ -1381,4 +1381,3 @@ exports.security_delete_endpoint = function(urn, server, resolve, reject)
     else log_error("deleting security", error);
   });
 }
-

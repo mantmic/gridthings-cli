@@ -16,7 +16,6 @@ var port = process.env.PORT || 8889;        // set our port
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
     res.json({ message: 'Gridthings API' });
 });
@@ -82,10 +81,17 @@ router.get('/software/show/:endpoint', function(req, res) {
   })
 });
 
+//firmware show
+router.get('/firmware/show/:endpoint', function(req, res) {
+  gtapi.firmware_get(req.params.endpoint, '.', function(response){
+    res.json(response);
+  })
+});
+
 //software autodeploy
-var softwareStatemachine = require('./software-statemachine.js') ;
+var packageStatemachine = require('./package-statemachine.js') ;
 router.get('/software/autodeploy/:endpoint', function(req, res) {
-  var fsm = new softwareStatemachine.SoftwareUpdate({
+  var fsm = new packageStatemachine.SoftwareUpdate({
     endpoint:req.params.endpoint,
     targetSlot:req.query.slot,
     targetVersion:req.query.package,
