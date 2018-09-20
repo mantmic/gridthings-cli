@@ -118,3 +118,32 @@ router.get('/devices', function(req, res) {
     }
   });
 });
+
+//commands
+//show
+router.get('/command/show/:endpoint', function(req, res) {
+  if(req.query.read_only == false){
+    var read_only = false ;
+  } else {
+    var read_only = true ;
+  }
+  gtapi.command_get(req.params.endpoint, '.',
+    function(response){
+      res.json(response);
+    },
+    function(response){
+      console.log(response)
+      res.json([])
+    }, read_only)
+});
+
+//cancel
+router.get('/command/delete/:endpoint_command_id', function(req, res) {
+  gtapi.command_cancel(req.params.endpoint_command_id, '.', function(response){
+    res.json(response);
+  })
+});
+
+//push
+
+//stream

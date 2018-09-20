@@ -104,7 +104,11 @@
     "gtcli-environment-list": "./environment-list.js",
     "gtcli-environment-set": "./environment-set.js",
     "gtcli-software-autodeploy": "./sw-autodeploy.js",
-    "gtcli-firmware-autodeploy": "./fw-autodeploy.js"
+    "gtcli-firmware-autodeploy": "./fw-autodeploy.js",
+    "gtcli-command":"./command.js",
+    "gtcli-command-show":"./command-show.js",
+    "gtcli-command-push":"./command-push.js",
+    "gtcli-command-delete":"./command-delete.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"

@@ -7,6 +7,9 @@ var fs = require("fs");
 var gtswp = require('./gt-software-package.js');
 var defaults = require('./defaults.js');
 
+//maximum age of a core value in milliseconds before the leshan api is hit again
+const max_core_age = 60000 ;
+
 exports.log_level = 0;
 function log_debug(str)
 {
@@ -365,7 +368,7 @@ function make_history_url(path, server)
   return "https://history." + defaults.check_server_name(server) + "/" + path;
 }
 
-exports.history_exec= function(path, body, server, resolve, reject)
+exports.history_exec= function(path, body, server, resolve, reject, singleObject = false)
 {
   try
   {
@@ -377,6 +380,7 @@ exports.history_exec= function(path, body, server, resolve, reject)
       .cert(certs.crt)
       .key(certs.key)
       .set('Content-Type', 'application/json')
+      .set('Prefer', ( singleObject ? 'params=single-object' : '') )
       .send(body)
       .end(function(error, response) {
         if (error)
@@ -392,6 +396,167 @@ exports.history_exec= function(path, body, server, resolve, reject)
   }
 }
 
+exports.command_push = function(endpoint, command, payload, server, resolve, reject){
+  exports.history_exec(
+    'rpc/insert_endpoint_command',
+    {
+      endpoint:endpoint,
+      payload:payload,
+      command:command
+    },server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        if(contents.length > 0){
+          resolve(contents[0].insert_command);
+        } else {
+          resolve([]);
+        }
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    },singleObject = false);
+}
+;
+
+exports.command_get = function(endpoint, server, resolve, reject, read_only = true){
+  if(read_only){
+    var path = 'rpc/read_endpoint_command'
+    var result_object = 'read_endpoint_command'
+  } else {
+    var path = 'rpc/get_endpoint_command'
+    var result_object = 'get_endpoint_command'
+  }
+  exports.history_exec(
+    path,
+    {
+      endpoint:endpoint
+    },server,function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        if(contents.length > 0){
+          resolve(contents[0][result_object]);
+        } else {
+          resolve([]);
+        }
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    },singleObject = false);
+}
+;
+
+exports.command_cancel = function(endpoint_command_id, server, resolve, reject){
+  exports.history_exec(
+    'rpc/complete_endpoint_command',
+    {
+      endpoint_command_id:endpoint_command_id,
+      response:'cancelled',
+      complete_status:'cancelled'
+    },server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        if(contents.length > 0){
+          resolve(contents[0].complete_endpoint_command);
+        } else {
+          resolve([]);
+        }
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    },singleObject = false);
+}
+;
+
+//function to push a value
+exports.value_push = function(endpoint, resource, value, timestamp, server,resolve, reject){
+  exports.history_exec(
+    'rpc/insert_value',
+    {
+      uri_path:resource,
+      endpoint:endpoint,
+      value:value,
+      timestamp:timestamp
+    },server,resolve,reject,singleObject = true);
+}
+;
+
+exports.get_endpoint = function(endpoint, server, resolve, reject){
+  var payload = [];
+  if(!(endpoint == '.' || endpoint == null)){
+    payload.push('endpoint=eq.' + endpoint)
+  }
+  exports.history_get("endpoint", payload, server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        resolve(contents);
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    }
+  );
+}
+;
+
+exports.get_latest_value = function(endpoint,resource, server,resolve,reject){
+  var q = [];
+  q.push("endpoint=eq." + endpoint);
+  q.push("uri_path=eq." + resource);
+  q.push("select=uri_path,timestamp,value");
+  q.push("order=timestamp.desc");
+  q.push("limit=1");
+  exports.history_get("values", q, server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        if(contents.length > 0){
+          resolve(contents[0]);
+        } else {
+          resolve({});
+        }
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    });
+}
+;
 
 exports.history_get = function(path, query, server, resolve, reject)
 {
@@ -625,6 +790,54 @@ function lwm2m_object_response_to_map(response)
 
   return {};
 }
+;
+
+exports.endpoint_object_to_map = function(endpoint,resource){
+  map = {};
+  var resources = Object.keys(endpoint.values);
+  //get the relevant keys
+  resources = resources.filter(r => r.startsWith(resource + '/')) ;
+  resources.forEach(function(r){
+    //first digit is the instance, second is the resource
+    const uri = r.split("/") ;
+    const instance = uri[1];
+    const resource = uri[2] ;
+    if(map[instance] == null){
+      map[instance] = {} ;
+    }
+    map[instance][resource] = endpoint.values[r] ;
+  }) ;
+  return(map);
+}
+
+function lwm2m_object_response_to_value(response, endpoint){
+  var value = [];
+  var resp_obj = JSON.parse(response.text);
+  if (resp_obj.status == "CONTENT"){
+    var base_resource = resp_obj.content.id ;
+    resp_obj.content.instances.forEach(function(i){
+    	i.resources.forEach(function(r){
+    	   var uri_path = base_resource + "/" + i.id + "/" + r.id ;
+         value.push({
+    	     uri_path:uri_path,
+    	     timestamp: new Date,
+           value:r.value,
+           endpoint:endpoint
+         })
+    	}) ;
+    });
+  }
+  return(value);
+}
+;
+
+function cache_core_value(response,endpoint, server){
+  let value = lwm2m_object_response_to_value(response,endpoint) ;
+  value.forEach(function(v){
+    exports.value_push(v.endpoint, v.uri_path, v.value, v.timestamp, server,function(data){return}, function(data){return})
+  });
+}
+;
 
 function software_print_state(context, state)
 {
@@ -677,15 +890,55 @@ exports.software_publish_package = function(package_name, server, resolve, rejec
       else log_error("publishing software package", error);
     });
 }
+;
 
-exports.software_get = function(urn, server, resolve, reject)
-{
-  exports.core_get("9", urn, server,
-    function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){
-      if (reject) reject(error);
-      else log_error("fetching software resources", error);
-    });
+exports.software_get = function(urn, no_cache, server, resolve, reject){
+  //if the latest value is fresh enough, return cached values, otherwise hit the leshan server
+  var hit_leshan = function(){
+    exports.core_get("9", urn, server,
+      function(response){
+        //cache values
+        cache_core_value(response,urn,server);
+        resolve(lwm2m_object_response_to_map(response))
+      },
+      function(error){
+        if (reject) reject(error);
+        else log_error("fetching software resources", error);
+      }
+    );
+  }
+  if(no_cache){
+    hit_leshan()
+  } else {
+    exports.get_latest_value(urn,"9/0/0",server,
+      function(response){
+        //check if the timestamp is new enough, then decide whether to hit leshan or continue
+        if(response.timestamp == null){
+          hit_leshan()
+        } else if (new Date - new Date(response.timestamp + '+00:00') > max_core_age){
+          hit_leshan()
+        } else {
+          exports.get_endpoint(urn,server,
+            function(endpoint){
+              var map_object = exports.endpoint_object_to_map(endpoint[0], '9') ;
+              if(map_object == null){
+                hit_leshan();
+              } else {
+                resolve(map_object)
+              }
+            },
+            function(error){
+              console.log(error)
+            }
+          )
+        }
+      },
+      function(error){
+        log_error("fetching software resources", error);
+        hit_leshan();
+      }
+    )
+  }
 }
 
 exports.software_reload_packages = function(server, resolve, reject)
@@ -1030,7 +1283,10 @@ exports.list_devices = function(server, resolve, reject)
 exports.device_get = function(urn, server, resolve, reject)
 {
   exports.core_get("3", urn, server,
-    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(response){
+      cache_core_value(response,urn,server);
+      resolve(lwm2m_object_response_to_map(response))
+    },
     function(error){
       if (reject) reject(error);
       else log_error("fetching device resources", error);
@@ -1040,7 +1296,10 @@ exports.device_get = function(urn, server, resolve, reject)
 exports.device_system_get = function(urn, server, resolve, reject)
 {
   exports.core_get("30006", urn, server,
-    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(response){
+      cache_core_value(response,urn,server);
+      resolve(lwm2m_object_response_to_map(response))
+    },
     function(error){
       if (reject) reject(error);
       else log_error("fetching device system resources", error);
@@ -1048,10 +1307,12 @@ exports.device_system_get = function(urn, server, resolve, reject)
 }
 
 
-exports.server_get = function(urn, server, resolve, reject)
-{
+exports.server_get = function(urn, server, resolve, reject){
   exports.core_get("1", urn, server,
-    function(response) {resolve(lwm2m_object_response_to_map(response))},
+    function(response){
+      cache_core_value(response,urn,server);
+      resolve(lwm2m_object_response_to_map(response))
+    },
     function(error){
       if (reject) reject(error);
       else log_error("fetching server resources", error);
@@ -1089,16 +1350,52 @@ exports.fw_result_to_string = function(state)
   return "unknown";
 }
 
-exports.firmware_get = function(urn, server, resolve, reject)
-{
-  exports.core_get("5", urn, server,
-    function(response) {resolve(lwm2m_object_response_to_map(response))},
-    function(error){
-      if (reject) reject(error);
-      else log_error("fetching firmware resources", error);
-    });
+exports.firmware_get = function(urn, no_cache, server, resolve, reject){
+  var hit_leshan = function(){
+    exports.core_get("5", urn, server,
+      function(response){
+        cache_core_value(response,urn,server);
+        resolve(lwm2m_object_response_to_map(response))
+      },
+      function(error){
+        if (reject) reject(error);
+        else log_error("fetching firmware resources", error);
+      });
+  }
+  if(no_cache){
+    hit_leshan()
+  } else {
+    exports.get_latest_value(urn,"5/0/3",server,
+      function(response){
+        //check if the timestamp is new enough, then decide whether to hit leshan or continue
+        if(response.timestamp == null){
+          hit_leshan()
+        } else if (new Date - new Date(response.timestamp + '+00:00') > max_core_age){
+          hit_leshan()
+        } else {
+          exports.get_endpoint(urn,server,
+            function(endpoint){
+              var map_object = exports.endpoint_object_to_map(endpoint[0], '5') ;
+              if(map_object == null){
+                hit_leshan();
+              } else {
+                resolve(map_object)
+              }
+            },
+            function(error){
+              console.log(error)
+            }
+          )
+        }
+      },
+      function(error){
+        log_error("fetching software resources", error);
+        hit_leshan();
+      }
+    )
+  }
 }
-
+;
 
 exports.firmware_push = function(package, urn, server, resolve, reject)
 {

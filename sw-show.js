@@ -52,10 +52,12 @@ program
   .arguments('<urn> [server]')
   .option('-v, --verbose', 'Be verbose')
   .option('-j, --json', 'Print repsonse as JSON')
+  .option('-n, --nocache', 'Do not used cached values, hit the LWM2M server')
   .action(function(urn, server) {
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
-    gtapi.software_get(urn, server, function(response)
+    no_cache = program.nocache ;
+    gtapi.software_get(urn, no_cache, server, function(response)
     {
       if (print_json)
       {
