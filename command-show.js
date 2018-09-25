@@ -27,8 +27,9 @@ program
 
             console.log("  Id:               " + r.endpoint_command_id);
             console.log("  Command:          " + r.command);
+            console.log("  Payload:          " + JSON.stringify(r.payload) )
             console.log("  Status:           " + r.status);
-            console.log("  Reponse:          " + r.response);
+            console.log("  Response:         " + r.response);
             console.log("  Created:          " + new Date(r.created_on_ts));
             console.log("  Last updated:     " + new Date(r.last_updated_ts));
           })

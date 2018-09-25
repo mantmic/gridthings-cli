@@ -11,7 +11,7 @@ program
   .action(function(endpoint_command_id, server) {
     if (program.verbose) gtapi.log_level = 1;
     print_json = program.json;
-    gtapi.command_cancel(endpoint_command_id, server, function(response)
+    gtapi.command_complete(endpoint_command_id, 'cancelled', 'cancelled', server, function(response)
     {
       if (print_json)
       {

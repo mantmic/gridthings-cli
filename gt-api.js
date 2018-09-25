@@ -70,10 +70,10 @@ function log_error(context, err)
     }
   }
   else if (err.code) console.log((err.code == "ECONNREFUSED" ? "connection refused" : err.code) + " " + err.address);
-  else if (err.includes("504 Gateway Time-out"))
+  /*else if (err.includes("504 Gateway Time-out"))
   {
     console.log("timeout waiting for response");
-  }
+  }*/
   else console.log(err);
 }
 
@@ -460,13 +460,13 @@ exports.command_get = function(endpoint, server, resolve, reject, read_only = tr
 }
 ;
 
-exports.command_cancel = function(endpoint_command_id, server, resolve, reject){
+exports.command_complete = function(endpoint_command_id, server, response, status, resolve, reject){
   exports.history_exec(
     'rpc/complete_endpoint_command',
     {
       endpoint_command_id:endpoint_command_id,
-      response:'cancelled',
-      complete_status:'cancelled'
+      response:response,
+      complete_status:status
     },server,
     function(response) {
       try
@@ -928,7 +928,7 @@ exports.software_get = function(urn, no_cache, server, resolve, reject){
               }
             },
             function(error){
-              console.log(error)
+              reject(error)
             }
           )
         }
@@ -955,7 +955,7 @@ exports.software_reload_packages = function(server, resolve, reject)
 exports.software_deactivate = function(slot, urn, server, resolve, reject)
 {
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     //console.log(JSON.stringify());
     var software_states = repsonse;
     if (!software_states[slot])
@@ -999,7 +999,7 @@ exports.software_deactivate = function(slot, urn, server, resolve, reject)
 exports.software_install = function(slot, urn, server, resolve, reject)
 {
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     var software_states = repsonse;
     if (!software_states[slot])
     {
@@ -1009,7 +1009,7 @@ exports.software_install = function(slot, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 0)
       { //no package
@@ -1044,10 +1044,9 @@ exports.software_install = function(slot, urn, server, resolve, reject)
 }
 
 
-exports.software_uninstall = function(slot, urn, server, resolve, reject)
-{
+exports.software_uninstall = function(slot, urn, server, resolve, reject){
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     var software_states = repsonse;
     if (!software_states[slot])
     {
@@ -1099,8 +1098,11 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
       {
         console.log("software is now inactive");
         exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
-          if (response.status == 200) console.log("software is now uninstalled");
-          else console.log("failed to uninstall software", response.text);
+          if (response.status == 200){
+            resolve("software is now uninstalled")
+          } else {
+            reject("failed to uninstall software " + response.text);
+          }
         },
         function(error){
           if (reject) reject(error);
@@ -1110,8 +1112,11 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
       else if (state[7] == 3) //downloaded but not active
       {
         exports.core_exec("9" + "/" + slot + "/6", null, urn, server, function(response) {
-          if (response.status == 200) console.log("software is now uninstalled");
-          else console.log("failed to uninstall software", response.text);
+          if (response.status == 200){
+            resolve("software is now uninstalled");
+          } else {
+            reject("failed to uninstall software " + response.text);
+          }
         },
         function(error){
           if (reject) reject(error);
@@ -1125,7 +1130,7 @@ exports.software_uninstall = function(slot, urn, server, resolve, reject)
 exports.software_cancel = function(slot, urn, server, resolve, reject)
 {
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     var software_states = repsonse;
     if (!software_states[slot])
     {
@@ -1135,7 +1140,7 @@ exports.software_cancel = function(slot, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 1)
       { //downloading
@@ -1160,7 +1165,7 @@ exports.software_cancel = function(slot, urn, server, resolve, reject)
 exports.software_activate = function(slot, urn, server, resolve, reject)
 {
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     //console.log(JSON.stringify());
     var software_states = repsonse;
     if (!software_states[slot])
@@ -1171,7 +1176,7 @@ exports.software_activate = function(slot, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 0)
       { //no package
@@ -1222,7 +1227,7 @@ exports.software_activate = function(slot, urn, server, resolve, reject)
 exports.software_push = function(slot, package, urn, server, resolve, reject)
 {
   //first get the state
-  exports.software_get(urn, server, function(repsonse){
+  exports.software_get(urn, true, server, function(repsonse){
     //console.log(JSON.stringify());
     var software_states = repsonse;
     if (!software_states[slot])
@@ -1233,7 +1238,7 @@ exports.software_push = function(slot, package, urn, server, resolve, reject)
     else
     {
       var state = software_states[slot];
-      software_print_state("software in slot 0 is ", software_states[slot]);
+      software_print_state("software in slot " + slot + " is ", software_states[slot]);
 
       if (state[7] == 0) //not installed
       {
@@ -1400,7 +1405,7 @@ exports.firmware_get = function(urn, no_cache, server, resolve, reject){
 exports.firmware_push = function(package, urn, server, resolve, reject)
 {
   //first get the state
-  exports.firmware_get(urn, server, function(repsonse){
+  exports.firmware_get(urn, true, server, function(repsonse){
     //console.log(JSON.stringify());
     var state = repsonse[0];
 
@@ -1443,7 +1448,7 @@ exports.firmware_push = function(package, urn, server, resolve, reject)
 exports.firmware_update = function(urn, server, resolve, reject)
 {
   //first get the state
-  exports.firmware_get(urn, server, function(repsonse){
+  exports.firmware_get(urn, true, server, function(repsonse){
     var state = repsonse[0];
     console.log("firmware is " + exports.fw_state_to_string(state));
 
@@ -1481,7 +1486,7 @@ exports.firmware_update = function(urn, server, resolve, reject)
 exports.firmware_cancel = function(urn, server, resolve, reject)
 {
   //first get the state
-  exports.firmware_get(urn, server, function(repsonse){
+  exports.firmware_get(urn, true, server, function(repsonse){
     var state = repsonse[0];
     console.log("firmware is " + exports.fw_state_to_string(state));
 

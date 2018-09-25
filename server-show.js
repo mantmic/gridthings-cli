@@ -27,7 +27,7 @@ program
       else
       {
         var state = response[0];
-       
+
         console.log("Server:");
         console.log("  Short Server ID:        " + get_value(state[0],""));
         console.log("  Lifetime:               " + get_value(state[1],""));
