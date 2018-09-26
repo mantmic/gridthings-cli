@@ -14,7 +14,7 @@ function getEnvironment(){
 
 function environmentList(){
   getEnvironment().forEach(function(s){
-    console.log(s, config.server == s ? "*" : "");
+    console.log(config.server == s ? "*" : " ", s);
   })
 }
 ;

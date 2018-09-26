@@ -217,6 +217,231 @@ servers.forEach(function(s){
 })
 ;
 
+/*
+  New routes with auth build in
+*/
+var auth = require('./auth.js') ;
+
+//route to get token
+router.post('/token', function(req, res) {
+  auth.getToken(req.body.userId,req.body.password,
+    function(token){
+      res.json({token:token});
+    }.bind(this),
+    function(e){
+      res.status(500).send({message:e})
+    }.bind(this)
+  )
+});
+
+
+//function to handle token, return user object
+function processRequest(req,res,resolve = function(userObject){console.log(userObject)}){
+  var token = req.headers['x-access-token'];
+  try {
+    if (!token){
+      return res.status(401).send({message: 'No token provided.' });
+    } else {
+      auth.getUserByToken(token,resolve,function(e){
+        res.status(500).send({message:e})
+      })
+    }
+  } catch(e){
+    res.status(500).send({message:e})
+  }
+}
+;
+
+function getRequestServer(req, userObject){
+  if(req.query.server == undefined){
+    return(userObject.defaultEnvironment);
+  } else {
+    if(userObject.environment[req.query.server] == null){
+      //return default if server not found
+      return(userObject.defaultEnvironment);
+    } else {
+      return(req.query.server);
+    }
+  }
+}
+;
+
+router.get('/environment/list', function(req, res) {
+  processRequest(req,res,function(userObject){
+    const environment = Object.keys(userObject.environment) ;
+    const defaultEnvironment = userObject.defaultEnvironment ;
+    res.json({
+      environment:environment,
+      defaultEnvironment:defaultEnvironment
+    });
+  })
+});
+
+router.get('/environment/set/:environment', function(req,res){
+  processRequest(req,res,function(userObject){
+    var user = userObject ;
+    const userEnvironment = Object.keys(userObject.environment) ;
+    if(userEnvironment.indexOf(req.params.environment) > -1){
+      user.defaultEnvironment = req.params.environment;
+      auth.pushUser(user,
+        function(data){
+          res.status(202).send({message:"Default environment set"})
+        }.bind(this),
+        function(e){
+          res.status(500).send({message:e})
+        }.bind(this)
+      )
+    } else {
+      res.status(500).send({message:"User does not have access to this environment"})
+    }
+  })
+})
+;
+
+//list devices
+router.get('/devices2', function(req, res) {
+  processRequest(req,res,function(userObject){
+    gtapi.list_devices(getRequestServer(req,userObject), function(response){
+      if (response.status == 200) {
+        var devices = JSON.parse(response.text);
+        res.json(devices);
+      } else {
+        res.json([]);
+      }
+    }.bind(this));
+  }.bind(this));
+});
+
+//show packages
+router.get('/package/list2', function(req, res) {
+  processRequest(req,res,function(userObject){
+    gtapi.software_list_packages(getRequestServer(req,userObject), function(response){
+      try {
+        var contents = JSON.parse(response.text);
+        var json_values = [];
+        for (var package = 0; package < contents.length; package++){
+          if (!contents[package]._id["$oid"]){
+            var p = gtswp.from_mongo(contents[package]);
+            json_values.push(p);
+          }
+        }
+        //get rid of the junk at the end of some of the strings
+        var find = '\u0000';
+        var re = new RegExp(find, 'g');
+        let data = json_values.map(function(s){
+          var d = s ;
+          d.version = s.version.replace(re, '').trim() ;
+          d.name = s.name.replace(re,'').trim();
+          //return(s);
+          return(d);
+        })
+        res.json(data);
+      }
+      catch(e){
+        res.status(500).send({message:e})
+      }
+    }.bind(this))
+  }.bind(this));
+});
+
+//routes to create users
+router.post('/user/add', function(req,res){
+  processRequest(req,res,function(userObject){
+    var requestUser = userObject ;
+    var newUser = req.body ;
+    //check that pushing user is admin in all the environments in userObject
+    const userEnvironment = Object.keys(newUser.environment) ;
+    var adminCheck = userEnvironment.map(function(ue){
+      if(requestUser.environment[ue] == null){
+        return(false)
+      } else {
+        return(requestUser.environment[ue]['admin'])
+      }
+    })
+    ;
+    if(adminCheck.every(function(c){return(c)})){
+      auth.pushUserObject(newUser,
+        function(data){
+          res.status(202).send({message:"User created"})
+        }.bind(this),
+        function(e){
+          res.status(500).send({message:e})
+        }.bind(this)
+      )
+    } else {
+      res.status(500).send({message:"To grant access to an environment you must be admin of that environment"})
+    }
+  }.bind(this))
+})
+;
+
+//software show
+router.get('/software/show2/:endpoint', function(req, res) {
+  processRequest(req,res,function(userObject){
+    gtapi.software_get(req.params.endpoint,false, getRequestServer(req,userObject), function(response){
+      res.json(response);
+    }.bind(this));
+  }.bind(this));
+});
+
+//software autodeploy
+router.get('/software/autodeploy2/:endpoint', function(req, res) {
+  processRequest(req,res,function(userObject){
+   const server = getRequestServer(req,userObject) ;
+   if(userObject.environment[server].powerUser){
+     //create a process
+     db.createProcess(server,function(processId){
+       var fsm = new packageStatemachine.SoftwareUpdate({
+         endpoint:req.params.endpoint,
+         targetSlot:req.query.slot,
+         targetVersion:req.query.package,
+         server:server,
+         printJson:true,
+         messageCallback:function(message){
+           db.updateProcess(processId,message) ;
+         }.bind(this),
+         callback:function(data){
+           db.completeProcess(processId,4) ;
+         }.bind(this)
+       })
+       ;
+       //console.log(fsm);
+       fsm.begin();
+       res.json({processId:processId});
+     }.bind(this))
+   } else {
+     res.status(500).send({message:"Power user permissions required to run this command"})
+   }
+  }.bind(this));
+});
+
+
+//firmware show
+router.get('/firmware/show2/:endpoint', function(req, res) {
+  processRequest(req,res,function(userObject){
+    gtapi.firmware_get(req.params.endpoint,false, getRequestServer(req,userObject), function(response){
+      res.json(response);
+    }.bind(this));
+  }.bind(this));
+});
+
+
+//routes for long running processes that return a processId
+var db = require('./auth-db.js') ;
+router.get('/process/:processId', function(req, res) {
+  processRequest(req,res,function(userObject){
+    const userEnvironment = Object.keys(userObject.environment) ;
+    db.getProcess(req.params.processId,function(processObject){
+      if(userEnvironment.indexOf(processObject.server) > -1){
+        res.json(processObject)
+      } else {
+        res.status(403).send({message:"Permission denied"})
+      }
+    }.bind(this))
+  }.bind(this));
+});
+
+
 
 // REGISTER OUR ROUTES -------------------------------
 app.use('/', router);

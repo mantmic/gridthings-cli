@@ -76,8 +76,10 @@ exports.SoftwareUpdate = StateMachine.factory({
        server:options.server,
        printJson:options.printJson,
        jsonOutput:[],
+       messageCallback:options.messageCallback,
        finishCallback:options.callback == null ? function(data){console.log(JSON.stringify(data, null, 2));} : options.callback,
-       sleepTime: options.sleepTime == null ? 60000 : options.sleepTime
+       sleepTime: options.sleepTime == null ? 60000 : options.sleepTime,
+       stepTime:2000
      })
    },
    transitions: [
@@ -102,7 +104,7 @@ exports.SoftwareUpdate = StateMachine.factory({
        //next step
        if(this.complete){
          this.messageOutput("Finish")
-         setTimeout(this.finish.bind(this),0);
+         setTimeout(this.finish.bind(this),this.stepTime);
        } else {
          //check if target software exists
          var target = getPackageByHashId(this.targetVersion, this.server);
@@ -110,7 +112,7 @@ exports.SoftwareUpdate = StateMachine.factory({
          .then(function(target){
            if(target._id == null){
              this.messageOutput("Target software does not exist")
-             setTimeout(this.finish.bind(this),0) ;
+             setTimeout(this.finish.bind(this),this.stepTime) ;
            } else {
              this.targetSize = target.payload_length;
              var hashPromise = null ;
@@ -145,8 +147,10 @@ exports.SoftwareUpdate = StateMachine.factory({
                //
                Promise.resolve(hashPromise)
                .then(function(p){
-                 this.originalVersion = p._id ;
-                   setTimeout(this.deactivate.bind(this),0) ;
+                 if(p._id != null){
+                   this.originalVersion = p._id ;
+                 }
+                 setTimeout(this.deactivate.bind(this),this.stepTime) ;
                }.bind(this))
              }.bind(this))
            }
@@ -169,16 +173,16 @@ exports.SoftwareUpdate = StateMachine.factory({
              this.messageOutput(response.code);
            });
          }.bind(this))
-         setTimeout(this.reactivate.bind(this),0)
+         setTimeout(this.reactivate.bind(this),this.stepTime)
        } else {
          this.messageOutput("Uninstalling")
          if(this.slotUsed){
            gtapi.software_uninstall(this.targetSlot, this.endpoint, this.server, function(response){
             this.messageOutput("Software uninstalled " + response.code);
-            setTimeout(this.uninstall.bind(this),0)
+            setTimeout(this.uninstall.bind(this),this.stepTime)
           }.bind(this));
         } else {
-            setTimeout(this.uninstall.bind(this),0)
+            setTimeout(this.uninstall.bind(this),this.stepTime)
         }
        }
      },
@@ -199,10 +203,10 @@ exports.SoftwareUpdate = StateMachine.factory({
        //check if successful
        this.checkUpdateStatus(function(success){
          if(success){
-           setTimeout(this.completeupdate.bind(this),0);
+           setTimeout(this.completeupdate.bind(this),this.stepTime);
          } else {
            //setTimeout(this.rollback.bind(this),0);
-           setTimeout(this.pushOriginalSoftware.bind(this),0,this.rollback.bind(this));
+           setTimeout(this.pushOriginalSoftware.bind(this),this.stepTime,this.rollback.bind(this));
          }
        }.bind(this))
      },
@@ -212,7 +216,7 @@ exports.SoftwareUpdate = StateMachine.factory({
        if(this.slotUsed){
          this.checkUpdateStatus(function(rollbackSuccess){
            if(rollbackSuccess){
-             setTimeout(this.completerollback.bind(this),0);
+             setTimeout(this.completerollback.bind(this),this.stepTime);
            } else {
              //sleep
              //retry
@@ -220,7 +224,7 @@ exports.SoftwareUpdate = StateMachine.factory({
            }
          }.bind(this))
        } else {
-         setTimeout(this.completerollback.bind(this),0);
+         setTimeout(this.completerollback.bind(this),this.stepTime);
        }
      },
      /*
@@ -285,8 +289,22 @@ exports.SoftwareUpdate = StateMachine.factory({
        }.bind(this));
      },
      messageOutput(message){
-       if(this.printJson){
-         this.jsonOutput.push({
+       //if there's no message callback, do things on console
+       if(this.messageCallback == null){
+         if(this.printJson){
+           this.jsonOutput.push({
+             timestamp:moment(),
+             message:message,
+             endpoint:this.endpoint,
+             targetVersion:this.targetVersion,
+             targetSlot:this.targetSlot,
+             originalVersion:this.originalVersion
+           })
+         } else {
+           console.log(message)
+         }
+       } else {
+         this.messageCallback({
            timestamp:moment(),
            message:message,
            endpoint:this.endpoint,
@@ -294,8 +312,6 @@ exports.SoftwareUpdate = StateMachine.factory({
            targetSlot:this.targetSlot,
            originalVersion:this.originalVersion
          })
-       } else {
-         console.log(message)
        }
      }
    }
