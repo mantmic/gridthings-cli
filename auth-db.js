@@ -1,18 +1,50 @@
-var fs = require("fs");
-const userFile = './test/user.json' ;
-
-//replace this with an interface to mongo / postgres / whatever
-
-exports.getUserById = function(userId){
-  var user = JSON.parse(fs.readFileSync(userFile, 'utf8'));
-  if(user[userId] == null){
-    return({})
+var MongoClient = require('mongodb').MongoClient;
+const config = require('./config.json') ;
+// Connect to the db
+MongoClient.connect(config.mongoUri, function (err, db) {
+  if(err){
+    throw err;
   } else {
-    return(user[userId])
+    console.log("Connected to mongodb")
   }
+});
+
+var db = require('diskdb');
+// this
+db = db.connect('./localdb',['user','process']);
+
+//create the admin user
+const adminUser = {
+  "_id":"admin",
+  "userId": "admin",
+  "hashedPassword": "$2a$08$r2xVFOzBZJzkOfVPEafkweB1VWr6ZumyYRtKc51y5TqT71iafaM4q",
+  "environment": {
+    "evoenergy-01.gridthin.gs": {
+      "user": true,
+      "powerUser": true,
+      "admin": true
+    },
+    "actewagl-01.gridthin.gs": {
+      "user": true,
+      "powerUser": true,
+      "admin": true
+    },
+    "ched-01.gridthin.gs": {
+      "user": true,
+      "powerUser": true,
+      "admin": true
+    }
+  },
+  "defaultEnvironment": "evoenergy-01.gridthin.gs"
 }
 ;
 
+exports.getUserById = function(userId){
+  return(db.user.findOne({userId: userId}));
+}
+;
+
+/*
 exports.pushUser = function(userObject,resolve = function(data){console.log(data), error = function(e){console.log(e)}}){
   var user = JSON.parse(fs.readFileSync(userFile, 'utf8'));
   user[userObject.userId] = userObject ;
@@ -25,7 +57,18 @@ exports.pushUser = function(userObject,resolve = function(data){console.log(data
   });
 }
 ;
+*/
 
+exports.pushUser = function(userObject,resolve = function(data){console.log(data), error = function(e){console.log(e)}}){
+  try{
+    resolve(db.user.update({userId:userObject.userId},userObject, {upsert:true}));
+  } catch(e){
+    error(e)
+  }
+}
+;
+
+exports.pushUser(adminUser);
 
 //methods for cached commands
 /*
@@ -42,7 +85,7 @@ exports.pushUser = function(userObject,resolve = function(data){console.log(data
 const uuidv4 = require('uuid/v4');
 const processFile = './test/process.json' ;
 
-
+/*
 function pushProcess(processId, processObject, resolve = function(processId){console.log(processId)}){
   try{
     var p = JSON.parse(fs.readFileSync(processFile, 'utf8'));
@@ -76,6 +119,28 @@ exports.getProcess = function(processId,resolve = function(data){console.log(dat
       }
     }
   }.bind(this))
+}
+;
+*/
+
+function pushProcess(processId, processObject, resolve = function(processId){console.log(processId)}){
+  try {
+    var p = processObject ;
+    p.processId = processId ;
+    db.process.update({processId:processId}, p, {upsert:true});
+    resolve(processId) ;
+  } catch(e){
+    console.log(e);
+  }
+}
+;
+
+exports.getProcess = function(processId,resolve = function(data){console.log(data)}){
+  try {
+    resolve(db.process.findOne({processId:processId}))
+  } catch(e){
+    console.log(e);
+  }
 }
 ;
 

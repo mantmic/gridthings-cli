@@ -504,6 +504,27 @@ exports.value_push = function(endpoint, resource, value, timestamp, server,resol
 }
 ;
 
+exports.get_endpoints = function(server, resolve,reject){
+  exports.history_get("endpoint", [], server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        resolve(contents);
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    }
+  );
+}
+;
+
 exports.get_endpoint = function(endpoint, server, resolve, reject){
   var payload = [];
   if(!(endpoint == '.' || endpoint == null)){
@@ -529,10 +550,11 @@ exports.get_endpoint = function(endpoint, server, resolve, reject){
 }
 ;
 
-exports.get_latest_value = function(endpoint,resource, server,resolve,reject){
+exports.get_latest_value = function(endpoint,resource, server, resolve,reject,maxTimestamp = new Date('2199-12-31')){
   var q = [];
   q.push("endpoint=eq." + endpoint);
   q.push("uri_path=eq." + resource);
+  q.push("timestamp=lte." + maxTimestamp.toISOString()) ;
   q.push("select=uri_path,timestamp,value");
   q.push("order=timestamp.desc");
   q.push("limit=1");

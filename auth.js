@@ -63,6 +63,9 @@ exports.getUserByToken = function(token, resolve = function(data){console.log(da
   const userId = decodedToken.userId ;
   //get user object
   const userObject = db.getUserById(decodedToken.userId);
+  if(userObject == null || userObject.userId == null){
+    error("User not found")
+  }
   //compare hashedPassword
   if(userObject.hashedPassword != decodedToken.hashedPassword){
     error("Password expired")
@@ -75,7 +78,7 @@ exports.getUserByToken = function(token, resolve = function(data){console.log(da
 exports.getToken = function(userId,password,resolve = function(data){console.log(data)}, error = function(error){console.log(error)}){
   //check if hashed password matches what is in the db
   const userObject = db.getUserById(userId);
-  if(userObject.userId == null){
+  if(userObject == null || userObject.userId == null){
     error("User not found")
   } else if (!comparePassword(password,userObject.hashedPassword)){
     error("Incorrect password")

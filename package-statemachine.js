@@ -333,9 +333,11 @@ exports.SoftwareUpdate = StateMachine.factory({
       targetSize:0,
       server:options.server,
       printJson:options.printJson,
+      messageCallback:options.messageCallback,
       jsonOutput:[],
       finishCallback:options.callback == null ? function(data){console.log(JSON.stringify(data, null, 2));} : options.callback,
-      sleepTime: options.sleepTime == null ? 60000 : options.sleepTime
+      sleepTime: options.sleepTime == null ? 60000 : options.sleepTime,
+      stepTime:2000
     })
   },
   transitions: [
@@ -357,7 +359,7 @@ exports.SoftwareUpdate = StateMachine.factory({
       //next step
       if(this.complete){
         this.messageOutput("Finish")
-        setTimeout(this.finish.bind(this),0);
+        setTimeout(this.finish.bind(this),this.stepTime);
       } else {
         //check if target software exists
         this.messageOutput("Checking if target software exists");
@@ -366,7 +368,7 @@ exports.SoftwareUpdate = StateMachine.factory({
         .then(function(target){
           if(target._id == null){
             this.messageOutput("Target software does not exist")
-            setTimeout(this.finish.bind(this),0) ;
+            setTimeout(this.finish.bind(this),this.stepTime) ;
           } else {
             this.targetSize = target.payload_length;
             this.messageOutput("Updating")
@@ -382,7 +384,7 @@ exports.SoftwareUpdate = StateMachine.factory({
                 this.originalVersion = p._id ;
                 gtapi.firmware_push(this.targetVersion, this.endpoint, this.server, function(response){
                   this.messageOutput(response.status) ;
-                  setTimeout(this.update.bind(this),0) ;
+                  setTimeout(this.update.bind(this),this.stepTime) ;
                 }.bind(this));
               }.bind(this))
             }.bind(this));
@@ -400,11 +402,11 @@ exports.SoftwareUpdate = StateMachine.factory({
         if(success){
           gtapi.firmware_update(this.endpoint, this.server, function(response){
             this.messageOutput(response.status) ;
-            setTimeout(this.completeupdate.bind(this),0);
+            setTimeout(this.completeupdate.bind(this),this.stepTime);
           }.bind(this));
         } else {
           //setTimeout(this.rollback.bind(this),0);
-          setTimeout(this.pushOriginalSoftware,0,this.rollback.bind(this));
+          setTimeout(this.pushOriginalSoftware,this.stepTime,this.rollback.bind(this));
         }
       }.bind(this))
     },
@@ -413,7 +415,7 @@ exports.SoftwareUpdate = StateMachine.factory({
       //attempt a rollback
       this.checkUpdateStatus(function(rollbackSuccess){
         if(rollbackSuccess){
-          setTimeout(this.completerollback.bind(this),0);
+          setTimeout(this.completerollback.bind(this),this.stepTime);
         } else {
           //sleep
           //retry
@@ -473,16 +475,27 @@ exports.SoftwareUpdate = StateMachine.factory({
       }.bind(this));
     },
     messageOutput(message){
-      if(this.printJson){
-        this.jsonOutput.push({
+      //if there's no message callback, do things on console
+      if(this.messageCallback == null){
+        if(this.printJson){
+          this.jsonOutput.push({
+            timestamp:moment(),
+            message:message,
+            endpoint:this.endpoint,
+            targetVersion:this.targetVersion,
+            originalVersion:this.originalVersion
+          })
+        } else {
+          console.log(message)
+        }
+      } else {
+        this.messageCallback({
           timestamp:moment(),
           message:message,
           endpoint:this.endpoint,
           targetVersion:this.targetVersion,
           originalVersion:this.originalVersion
         })
-      } else {
-        console.log(message)
       }
     }
   }
