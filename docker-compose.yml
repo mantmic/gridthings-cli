@@ -1,0 +1,40 @@
+version: '2'
+networks:
+  gt:
+    driver: bridge
+
+services:
+    mongo:
+        image: mongo:4.0
+        restart: always
+        ports:
+          - "27017:27017"
+        command: mongod --smallfiles
+        environment:
+          - MONGO_DATA_DIR=/data/db
+          - MONGO_LOG_DIR=/dev/null
+        networks:
+          - gt
+    mongo-seed:
+       image: mongo:4.0
+       links:
+           - mongo:mongo
+       networks:
+           - gt
+       command: mongo --host mongo --eval  "db.getSiblingDB('gt').createUser({user:'root', pwd:'root', roles:[{role:'readWrite',db:'gt'}]});"
+       depends_on:
+        - mongo
+    gtcli:
+        image: 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+        restart: always
+        volumes:
+          - ./certs:/gridthings-cli/certs:z
+        ports:
+          - "443:443"
+        links:
+          - mongo:mongo
+        depends_on:
+          - mongo
+          - mongo-seed
+        networks:
+          - gt

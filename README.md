@@ -52,7 +52,7 @@ gtcli environment list
 
 ## Setup default server
 
-Set the default server with the environment set command 
+Set the default server with the environment set command
 ```
 gtcli environment set server-01.gridthin.gs
 ```
@@ -205,3 +205,35 @@ For development you will want to link to the files in this repo so that when you
 updated
 
 > sudo npm link
+
+
+# API Deployment
+
+Ensure that whatever machine this deployment will run from has gtcli configured to access all required environments.
+
+Copy the contents of .gtcli to this repository directory prior to deployment.
+
+```
+cp -R ~/.gtcli .
+```
+
+## SSH Certificates
+Currently we only have self-signed certificates as an option for deployment.
+
+## AWS Cloudformation
+
+Create stack
+```
+aws cloudformation create-stack --stack-name gtapi --capabilities CAPABILITY_NAMED_IAM --template-body file:///`pwd`/gridthings-api.json --parameters file:///`pwd`/gridthings-api.parameters
+```
+
+Delete stack
+
+```
+aws cloudformation delete-stack --stack-name gtapi
+```
+
+Add ssh key
+```
+cat ~/.ssh/id_rsa.pub | (ssh -i mantfeld-laptop.pem ubuntu@13.236.179.43 "cat >> ~/.ssh/authorized_keys")
+```

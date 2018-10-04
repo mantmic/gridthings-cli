@@ -1,0 +1,460 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Metadata": {
+        "AWS::CloudFormation::Designer": {
+            "df9b3fca-96ea-42d2-b858-2910d1e16b0b": {
+                "size": {
+                    "width": 60,
+                    "height": 60
+                },
+                "position": {
+                    "x": 510,
+                    "y": 400
+                },
+                "z": 0,
+                "embeds": [],
+                "isrelatedto": [
+                    "be830371-6fe8-4692-868c-d3bdc0c442a0"
+                ]
+            },
+            "f0a34371-6e5f-4495-9537-aacf3e07a62f": {
+                "source": {
+                    "id": "a4cc263f-8aa3-463b-8de9-123feed1439e"
+                },
+                "target": {
+                    "id": "df670684-e913-4872-bd10-f98403ad9e76"
+                },
+                "z": 4
+            },
+            "6638e629-0162-47b6-8540-8b27d7f83b78": {
+                "source": {
+                    "id": "a4cc263f-8aa3-463b-8de9-123feed1439e"
+                },
+                "target": {
+                    "id": "990021ae-b78c-422f-945b-29b8f3504460"
+                },
+                "z": 5
+            },
+            "b42d47b0-9b7d-4ec9-99de-da61192bd9f8": {
+                "source": {
+                    "id": "df9b3fca-96ea-42d2-b858-2910d1e16b0b"
+                },
+                "target": {
+                    "id": "a4cc263f-8aa3-463b-8de9-123feed1439e"
+                },
+                "z": 6
+            },
+            "ecf47943-b35f-4276-814d-9b80e109286a": {
+                "source": {
+                    "id": "df9b3fca-96ea-42d2-b858-2910d1e16b0b"
+                },
+                "target": {
+                    "id": "be830371-6fe8-4692-868c-d3bdc0c442a0"
+                },
+                "z": 4
+            }
+        }
+    },
+    "Resources": {
+        "gtedgeserver": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "ImageId": "ami-e94e5e8a",
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "BlockDeviceMappings" : [
+                   {
+                      "DeviceName" : "/dev/sda1",
+                      "Ebs" : {
+                         "VolumeType" : "gp2",
+                         "DeleteOnTermination" : "true",
+                         "VolumeSize" : "50"
+                      }
+                   }
+                ],
+                "NetworkInterfaces": [
+                    {
+                        "GroupSet": [
+                            {
+                                "Ref": "GTEdgeSG"
+                            }
+                        ],
+                        "AssociatePublicIpAddress": "true",
+                        "DeviceIndex": "0",
+                        "DeleteOnTermination": "true",
+                        "SubnetId": {
+                            "Ref": "GTEdgeSubnet"
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "cd ~/\n",
+                                "echo \"",
+                                {
+                                    "Fn::Join": [
+                                        "\n",
+                                        {
+                                            "Ref": "GTDevOpsKey"
+                                        }
+                                    ]
+                                },
+                                "\" >> ~/.ssh/id_rsa.ots_devops\n",
+                                "echo \"",
+                                {
+                                    "Ref": "GTGitFingerPrint"
+                                },
+                                "\" >> ~/.ssh/known_hosts\n",
+                                "echo \"Host ots-m2m-git\" >> ~/.ssh/config\n",
+                                "echo \"   Hostname github.com\" >> ~/.ssh/config\n",
+                                "echo \"   IdentityFile ~/.ssh/id_rsa.ots_devops\" >> ~/.ssh/config\n",
+                                "sudo chmod go-rw ~/.ssh/id_rsa.ots_devops\n",
+                                "git clone --recursive git@ots-m2m-git:ots-m2m/gridthings-cli.git\n",
+                                "rm -rf ~/.ssh/id_rsa.ots_devops\n",
+                                "sudo apt-get update\n",
+                                "sudo apt-get -y install docker docker-compose awscli python-setuptools\n",
+                                "sudo apt-get -y install autoconf automake libtool pkg-config asciidoc doxygen\n",
+                                "cd ~/gridthings-cli \n",
+                                "mkdir -p certs \n",
+                                "cd certs \n",
+                                "wget https://raw.githubusercontent.com/anders94/https-authorized-clients/master/keys/ca.cnf \n",
+                                "openssl req -new -x509 -days 9999 -config ca.cnf -keyout ca-key.pem -out ca-crt.pem \n",
+                                "openssl genrsa -out server-key.pem 4096 \n",
+                                "wget https://raw.githubusercontent.com/anders94/https-authorized-clients/master/keys/server.cnf \n",
+                                "openssl req -new -config server.cnf -key server-key.pem -out server-csr.pem \n",
+                                "openssl x509 -req -extfile server.cnf -days 999 -passin \"pass:password\" -in server-csr.pem -CA ca-crt.pem -CAkey ca-key.pem -CAcreateserial -out server-crt.pem \n",
+                                "cd ~/grithings-cli \n",
+                                "sudo docker-compose -f docker-compose.yml up -d \n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "df9b3fca-96ea-42d2-b858-2910d1e16b0b"
+                }
+            }
+        }
+    },
+    "Parameters": {
+        "InstanceType": {
+            "Description": "WebServer EC2 instance type",
+            "Type": "String",
+            "Default": "t2.micro",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "g2.2xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "KeyName": {
+            "Description": "Name of an EC2 KeyPair to enable SSH access to the instance.",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+        },
+        "GTGitFingerPrint": {
+            "Description": "The known good fingerprint for github.com",
+            "Type": "String",
+            "ConstraintDescription": "Use ssh-keyscan github.com to gnereate the string and verifiy .",
+            "NoEcho": "true"
+        },
+        "GTDevOpsKey": {
+            "Description": "The private key contents used to access the OTS M2M devops github account",
+            "Type": "CommaDelimitedList",
+            "ConstraintDescription": "Must be the private key assocated with the OTS M2M github account.",
+            "NoEcho": "true"
+        },
+        "GTEdgeSG": {
+            "Description": "The security group to attach this image to",
+            "Type": "String"
+        },
+        "GTEdgeSubnet": {
+            "Description": "The subnet that this instance will run in",
+            "Type": "String"
+        },
+        "SSHLocation": {
+            "Description": " The IP address range that can be used to access the web server using SSH.",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "GTAWSAccessKeyId": {
+            "Description": "The Access Key Id for accessing the ECR docker repository",
+            "Type": "String",
+            "ConstraintDescription": "For the ECR docker repository.",
+            "NoEcho": "true"
+        },
+        "GTAWSSecretAccessKey": {
+            "Description": "The secret key for accessing the ECR docker repository",
+            "Type": "String",
+            "ConstraintDescription": "For the ECR docker repository.",
+            "NoEcho": "true"
+        }
+    },
+    "Mappings": {
+        "AWSInstanceType2Arch": {
+            "t1.micro": {
+                "Arch": "PV64"
+            },
+            "t2.micro": {
+                "Arch": "HVM64"
+            },
+            "t2.small": {
+                "Arch": "HVM64"
+            },
+            "t2.medium": {
+                "Arch": "HVM64"
+            },
+            "m1.small": {
+                "Arch": "PV64"
+            },
+            "m1.medium": {
+                "Arch": "PV64"
+            },
+            "m1.large": {
+                "Arch": "PV64"
+            },
+            "m1.xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.2xlarge": {
+                "Arch": "PV64"
+            },
+            "m2.4xlarge": {
+                "Arch": "PV64"
+            },
+            "m3.medium": {
+                "Arch": "HVM64"
+            },
+            "m3.large": {
+                "Arch": "HVM64"
+            },
+            "m3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "m3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c1.medium": {
+                "Arch": "PV64"
+            },
+            "c1.xlarge": {
+                "Arch": "PV64"
+            },
+            "c3.large": {
+                "Arch": "HVM64"
+            },
+            "c3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.large": {
+                "Arch": "HVM64"
+            },
+            "c4.xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "c4.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "g2.2xlarge": {
+                "Arch": "HVMG2"
+            },
+            "r3.large": {
+                "Arch": "HVM64"
+            },
+            "r3.xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "r3.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "i2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.2xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "d2.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "hi1.4xlarge": {
+                "Arch": "HVM64"
+            },
+            "hs1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "cr1.8xlarge": {
+                "Arch": "HVM64"
+            },
+            "cc2.8xlarge": {
+                "Arch": "HVM64"
+            }
+        },
+        "AWSRegionArch2AMI": {
+            "us-east-1": {
+                "PV64": "ami-1ccae774",
+                "HVM64": "ami-1ecae776",
+                "HVMG2": "ami-8c6b40e4"
+            },
+            "us-west-2": {
+                "PV64": "ami-ff527ecf",
+                "HVM64": "ami-e7527ed7",
+                "HVMG2": "ami-abbe919b"
+            },
+            "us-west-1": {
+                "PV64": "ami-d514f291",
+                "HVM64": "ami-d114f295",
+                "HVMG2": "ami-f31ffeb7"
+            },
+            "eu-west-1": {
+                "PV64": "ami-bf0897c8",
+                "HVM64": "ami-a10897d6",
+                "HVMG2": "ami-d5bc24a2"
+            },
+            "eu-central-1": {
+                "PV64": "ami-ac221fb1",
+                "HVM64": "ami-a8221fb5",
+                "HVMG2": "ami-7cd2ef61"
+            },
+            "ap-northeast-1": {
+                "PV64": "ami-27f90e27",
+                "HVM64": "ami-cbf90ecb",
+                "HVMG2": "ami-6318e863"
+            },
+            "ap-southeast-1": {
+                "PV64": "ami-acd9e8fe",
+                "HVM64": "ami-68d8e93a",
+                "HVMG2": "ami-3807376a"
+            },
+            "ap-southeast-2": {
+                "PV64": "ami-ff9cecc5",
+                "HVM64": "ami-fd9cecc7",
+                "HVMG2": "ami-89790ab3"
+            },
+            "sa-east-1": {
+                "PV64": "ami-bb2890a6",
+                "HVM64": "ami-b52890a8",
+                "HVMG2": "NOT_SUPPORTED"
+            },
+            "cn-north-1": {
+                "PV64": "ami-fa39abc3",
+                "HVM64": "ami-f239abcb",
+                "HVMG2": "NOT_SUPPORTED"
+            }
+        }
+    },
+    "Outputs": {
+        "GTEdgeSSH": {
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "ssh ubuntu@",
+                        {
+                            "Fn::GetAtt": [
+                                "gtedgeserver",
+                                "PublicIp"
+                            ]
+                        }
+                    ]
+                ]
+            },
+            "Description": "Newly created application ssh address"
+        }
+    }
+}

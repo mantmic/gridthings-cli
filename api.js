@@ -1,18 +1,24 @@
 var express    = require('express');        // call express
 const enableWs = require('express-ws') ;
+var https = require('https');
 var app        = express();                 // define our app using express
 var expressWs = enableWs(app);
+
 var gtapi = require('./gt-api.js');
 var gtswp = require('./gt-software-package.js');
 
 var bodyParser = require('body-parser');
+
+var fs = require('fs') ;
+
+const serverConfig = require('./config.json') ;
 
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8889;        // set our port
+//var port = process.env.PORT || 443;        // set our port
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -553,5 +559,11 @@ app.use('/', router);
 
 // START THE SERVER
 // =============================================================================
-app.listen(port);
+//app.listen(port);
+const port = 443 ;
+https.createServer({
+  key: fs.readFileSync(serverConfig.key),
+  cert: fs.readFileSync(serverConfig.cert),
+  ca: fs.readFileSync(serverConfig.ca)
+}, app).listen(port);
 console.log('GT Api running on port ' + port);
