@@ -118,10 +118,26 @@
                                 "echo \"   IdentityFile ~/.ssh/id_rsa.ots_devops\" >> ~/.ssh/config\n",
                                 "sudo chmod go-rw ~/.ssh/id_rsa.ots_devops\n",
                                 "git clone --recursive git@ots-m2m-git:ots-m2m/gridthings-cli.git\n",
+                                "cd gridthings-cli \n",
+                                "git checkout rest-api \n",
+                                "cd .. \n",
                                 "rm -rf ~/.ssh/id_rsa.ots_devops\n",
                                 "sudo apt-get update\n",
                                 "sudo apt-get -y install docker docker-compose awscli python-setuptools\n",
                                 "sudo apt-get -y install autoconf automake libtool pkg-config asciidoc doxygen\n",
+                                "sudo $(AWS_ACCESS_KEY_ID=",
+                                {
+                                    "Ref": "GTAWSAccessKeyId"
+                                },
+                                " AWS_SECRET_ACCESS_KEY=",
+                                {
+                                    "Ref": "GTAWSSecretAccessKey"
+                                },
+                                " aws ecr get-login --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                ")\n",
                                 "cd ~/gridthings-cli \n",
                                 "mkdir -p certs \n",
                                 "cd certs \n",
