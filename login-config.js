@@ -3,17 +3,9 @@ const os = require('os');
 var fs = require("fs");
 
 const path = require('path');
-var defaults_path = path.join(os.homedir(), '.gtcli', 'defaults');
+var login_path = path.join(os.homedir(), '.gtcli', 'config');
 
-var config = {};
-try
-{
-  config = JSON.parse(fs.readFileSync(defaults_path, 'utf8'));
-}
-catch (e)
-{
-  console.log("error in defaults file " + defaults_path +  " " + e);
-}
+
 
 //apply default
 exports.check_server_name = function(server)
@@ -29,10 +21,22 @@ exports.get_config = function()
 }
 
 exports.set_config = function(config){
-  fs.writeFile(defaults_path,JSON.stringify(config,null,2), function(err) {
+  fs.writeFile(login_path,JSON.stringify(config), function(err) {
     if(err) {
         return console.log(err);
     }
     console.log("defaults saved");
   });
+}
+;
+
+var config = {};
+try
+{
+  config = JSON.parse(fs.readFileSync(login_path, 'utf8'));
+}
+catch (e)
+{
+  console.log("Creating config file")
+  exports.set_config({})
 }

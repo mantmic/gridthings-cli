@@ -76,8 +76,10 @@ exports.SoftwareUpdate = StateMachine.factory({
        server:options.server,
        printJson:options.printJson,
        jsonOutput:[],
+       messageCallback:options.messageCallback,
        finishCallback:options.callback == null ? function(data){console.log(JSON.stringify(data, null, 2));} : options.callback,
-       sleepTime: options.sleepTime == null ? 60000 : options.sleepTime
+       sleepTime: options.sleepTime == null ? 60000 : options.sleepTime,
+       stepTime:2000
      })
    },
    transitions: [
@@ -102,7 +104,7 @@ exports.SoftwareUpdate = StateMachine.factory({
        //next step
        if(this.complete){
          this.messageOutput("Finish")
-         setTimeout(this.finish.bind(this),0);
+         setTimeout(this.finish.bind(this),this.stepTime);
        } else {
          //check if target software exists
          var target = getPackageByHashId(this.targetVersion, this.server);
@@ -110,12 +112,12 @@ exports.SoftwareUpdate = StateMachine.factory({
          .then(function(target){
            if(target._id == null){
              this.messageOutput("Target software does not exist")
-             setTimeout(this.finish.bind(this),0) ;
+             setTimeout(this.finish.bind(this),this.stepTime) ;
            } else {
              this.targetSize = target.payload_length;
-             this.messageOutput("Deactivating")
              var hashPromise = null ;
-             gtapi.software_get(this.endpoint, this.server, function(response){
+             gtapi.software_get(this.endpoint, false,this.server, function(response){
+              this.messageOutput("Deactivating slots")
                for (var instance_id = 0; instance_id < 4; instance_id++){
                  var state = response[instance_id]
                  //if the slot is activated, push it to the activated slots
@@ -145,8 +147,10 @@ exports.SoftwareUpdate = StateMachine.factory({
                //
                Promise.resolve(hashPromise)
                .then(function(p){
-                 this.originalVersion = p._id ;
-                   setTimeout(this.deactivate.bind(this),0) ;
+                 if(p._id != null){
+                   this.originalVersion = p._id ;
+                 }
+                 setTimeout(this.deactivate.bind(this),this.stepTime) ;
                }.bind(this))
              }.bind(this))
            }
@@ -169,16 +173,16 @@ exports.SoftwareUpdate = StateMachine.factory({
              this.messageOutput(response.code);
            });
          }.bind(this))
-         setTimeout(this.reactivate.bind(this),0)
+         setTimeout(this.reactivate.bind(this),this.stepTime)
        } else {
          this.messageOutput("Uninstalling")
          if(this.slotUsed){
            gtapi.software_uninstall(this.targetSlot, this.endpoint, this.server, function(response){
             this.messageOutput("Software uninstalled " + response.code);
-            setTimeout(this.uninstall.bind(this),0)
+            setTimeout(this.uninstall.bind(this),this.stepTime)
           }.bind(this));
         } else {
-            setTimeout(this.uninstall.bind(this),0)
+            setTimeout(this.uninstall.bind(this),this.stepTime)
         }
        }
      },
@@ -187,8 +191,8 @@ exports.SoftwareUpdate = StateMachine.factory({
        //push target software version
        this.messageOutput("Pushing update")
        gtapi.software_push(this.targetSlot, this.targetVersion, this.endpoint, this.server, function(response){
-         console.log(response.status);
-         setTimeout(this.update.bind(this),0);
+         this.messageOutput(response.text);
+         setTimeout(this.update.bind(this),this.sleepTime);
        }.bind(this));
        //setTimeout(this.update.bind(this),0);
      },
@@ -199,25 +203,29 @@ exports.SoftwareUpdate = StateMachine.factory({
        //check if successful
        this.checkUpdateStatus(function(success){
          if(success){
-           setTimeout(this.completeupdate.bind(this),0);
+           setTimeout(this.completeupdate.bind(this),this.stepTime);
          } else {
            //setTimeout(this.rollback.bind(this),0);
-           setTimeout(this.pushOriginalSoftware,0,this.rollback.bind(this));
+           setTimeout(this.pushOriginalSoftware.bind(this),this.stepTime,this.rollback.bind(this));
          }
        }.bind(this))
      },
      onRollingback:function() {
        this.messageOutput('Rolling back') ;
        //attempt a rollback
-       this.checkUpdateStatus(function(rollbackSuccess){
-         if(rollbackSuccess){
-           setTimeout(this.completerollback.bind(this),0);
-         } else {
-           //sleep
-           //retry
-           setTimeout(this.pushOriginalSoftware,this.sleepTime,this.rollbackretry.bind(this)) ;
-         }
-       }.bind(this))
+       if(this.slotUsed){
+         this.checkUpdateStatus(function(rollbackSuccess){
+           if(rollbackSuccess){
+             setTimeout(this.completerollback.bind(this),this.stepTime);
+           } else {
+             //sleep
+             //retry
+             setTimeout(this.pushOriginalSoftware.bind(this),this.sleepTime,this.rollbackretry.bind(this)) ;
+           }
+         }.bind(this))
+       } else {
+         setTimeout(this.completerollback.bind(this),this.stepTime);
+       }
      },
      /*
      onBegin:function(){
@@ -245,17 +253,23 @@ exports.SoftwareUpdate = StateMachine.factory({
      },
      //normal function to push original version
      pushOriginalSoftware:function(callback){
-       this.messageOutput("Pushing original version");
-       //callback();
-       gtapi.software_push(this.targetSlot, this.originalVersion, this.endpoint, this.server, function(response){
-         this.messageOutput(response.status) ;
+       if(this.slotUsed){
+         this.messageOutput("Pushing original version " + this.originalVersion);
+         //callback();
+         gtapi.software_push(this.targetSlot, this.originalVersion, this.endpoint, this.server, function(response){
+           this.messageOutput(response.status) ;
+           callback()
+         }.bind(this));
+       } else {
          callback()
-       }.bind(this));
+       }
      },
      checkUpdateStatus:function(callback = function(result){console.log(result)}){
+       this.messageOutput("Checking update status") ;
        //function to check the status of a pushed update
-       gtapi.software_get(this.endpoint, this.server, function(response){
+       gtapi.software_get(this.endpoint, true,this.server, function(response){
          var state = response[this.targetSlot]
+         this.messageOutput(state);
          if(state[7] == 1){
            //log the progress
            this.messageOutput('Downloading update ' + state[30005] + '/' + this.targetSize ) ;
@@ -268,11 +282,29 @@ exports.SoftwareUpdate = StateMachine.factory({
            running = false ;
            callback(true)
          }
+       }.bind(this),
+       function(error){
+         this.messageOutput(error);
+         setTimeout(this.checkUpdateStatus.bind(this),this.sleepTime,callback);
        }.bind(this));
      },
      messageOutput(message){
-       if(this.printJson){
-         this.jsonOutput.push({
+       //if there's no message callback, do things on console
+       if(this.messageCallback == null){
+         if(this.printJson){
+           this.jsonOutput.push({
+             timestamp:moment(),
+             message:message,
+             endpoint:this.endpoint,
+             targetVersion:this.targetVersion,
+             targetSlot:this.targetSlot,
+             originalVersion:this.originalVersion
+           })
+         } else {
+           console.log(message)
+         }
+       } else {
+         this.messageCallback({
            timestamp:moment(),
            message:message,
            endpoint:this.endpoint,
@@ -280,8 +312,6 @@ exports.SoftwareUpdate = StateMachine.factory({
            targetSlot:this.targetSlot,
            originalVersion:this.originalVersion
          })
-       } else {
-         console.log(message)
        }
      }
    }
@@ -303,9 +333,11 @@ exports.SoftwareUpdate = StateMachine.factory({
       targetSize:0,
       server:options.server,
       printJson:options.printJson,
+      messageCallback:options.messageCallback,
       jsonOutput:[],
       finishCallback:options.callback == null ? function(data){console.log(JSON.stringify(data, null, 2));} : options.callback,
-      sleepTime: options.sleepTime == null ? 60000 : options.sleepTime
+      sleepTime: options.sleepTime == null ? 60000 : options.sleepTime,
+      stepTime:2000
     })
   },
   transitions: [
@@ -327,7 +359,7 @@ exports.SoftwareUpdate = StateMachine.factory({
       //next step
       if(this.complete){
         this.messageOutput("Finish")
-        setTimeout(this.finish.bind(this),0);
+        setTimeout(this.finish.bind(this),this.stepTime);
       } else {
         //check if target software exists
         this.messageOutput("Checking if target software exists");
@@ -336,11 +368,11 @@ exports.SoftwareUpdate = StateMachine.factory({
         .then(function(target){
           if(target._id == null){
             this.messageOutput("Target software does not exist")
-            setTimeout(this.finish.bind(this),0) ;
+            setTimeout(this.finish.bind(this),this.stepTime) ;
           } else {
             this.targetSize = target.payload_length;
             this.messageOutput("Updating")
-            gtapi.firmware_get(this.endpoint, this.server, function(response){
+            gtapi.firmware_get(this.endpoint, false, this.server, function(response){
               var state = response[0]
               if(state[0] == ''){
                 this.slotUsed = false;
@@ -352,7 +384,7 @@ exports.SoftwareUpdate = StateMachine.factory({
                 this.originalVersion = p._id ;
                 gtapi.firmware_push(this.targetVersion, this.endpoint, this.server, function(response){
                   this.messageOutput(response.status) ;
-                  setTimeout(this.update.bind(this),0) ;
+                  setTimeout(this.update.bind(this),this.stepTime) ;
                 }.bind(this));
               }.bind(this))
             }.bind(this));
@@ -370,11 +402,11 @@ exports.SoftwareUpdate = StateMachine.factory({
         if(success){
           gtapi.firmware_update(this.endpoint, this.server, function(response){
             this.messageOutput(response.status) ;
-            setTimeout(this.completeupdate.bind(this),0);
+            setTimeout(this.completeupdate.bind(this),this.stepTime);
           }.bind(this));
         } else {
           //setTimeout(this.rollback.bind(this),0);
-          setTimeout(this.pushOriginalSoftware,0,this.rollback.bind(this));
+          setTimeout(this.pushOriginalSoftware,this.stepTime,this.rollback.bind(this));
         }
       }.bind(this))
     },
@@ -383,7 +415,7 @@ exports.SoftwareUpdate = StateMachine.factory({
       //attempt a rollback
       this.checkUpdateStatus(function(rollbackSuccess){
         if(rollbackSuccess){
-          setTimeout(this.completerollback.bind(this),0);
+          setTimeout(this.completerollback.bind(this),this.stepTime);
         } else {
           //sleep
           //retry
@@ -426,7 +458,7 @@ exports.SoftwareUpdate = StateMachine.factory({
     },
     checkUpdateStatus:function(callback = function(result){console.log(result)}){
       //function to check the status of a pushed update
-      gtapi.firmware_get(this.endpoint, this.server, function(response){
+      gtapi.firmware_get(this.endpoint, true, this.server, function(response){
         var state = response[0] ;
         if(state[7] == "none"){
           //log the progress
@@ -443,16 +475,27 @@ exports.SoftwareUpdate = StateMachine.factory({
       }.bind(this));
     },
     messageOutput(message){
-      if(this.printJson){
-        this.jsonOutput.push({
+      //if there's no message callback, do things on console
+      if(this.messageCallback == null){
+        if(this.printJson){
+          this.jsonOutput.push({
+            timestamp:moment(),
+            message:message,
+            endpoint:this.endpoint,
+            targetVersion:this.targetVersion,
+            originalVersion:this.originalVersion
+          })
+        } else {
+          console.log(message)
+        }
+      } else {
+        this.messageCallback({
           timestamp:moment(),
           message:message,
           endpoint:this.endpoint,
           targetVersion:this.targetVersion,
           originalVersion:this.originalVersion
         })
-      } else {
-        console.log(message)
       }
     }
   }

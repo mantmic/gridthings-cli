@@ -4,6 +4,8 @@ var program = require('commander');
 var packageStatemachine = require('./package-statemachine.js') ;
 
 
+//gtcli firmware autodeploy 42N7MKZy urn:imei:352753090108638 .
+
 program
   //.arguments('<package> <urn> [server]')
   .arguments('<package> <urn> [server]')
