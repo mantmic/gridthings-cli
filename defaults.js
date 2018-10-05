@@ -29,7 +29,7 @@ exports.get_config = function()
 }
 
 exports.set_config = function(config){
-  fs.writeFile(defaults_path,JSON.stringify(config), function(err) {
+  fs.writeFile(defaults_path,JSON.stringify(config,null,2), function(err) {
     if(err) {
         return console.log(err);
     }

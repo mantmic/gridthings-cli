@@ -103,6 +103,8 @@
     "gtcli-environment": "./environment.js",
     "gtcli-environment-list": "./environment-list.js",
     "gtcli-environment-set": "./environment-set.js",
+    "gtcli-environment-add":"./environment-add.js",
+    "gtcli-environment-remove":"./environment-remove.js",
     "gtcli-software-autodeploy": "./sw-autodeploy.js",
     "gtcli-firmware-autodeploy": "./fw-autodeploy.js",
     "gtcli-command": "./command.js",
