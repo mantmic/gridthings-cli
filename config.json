@@ -1,9 +1,0 @@
-{
-  "mongoUri":"mongodb://root:root@mongo:27017/gt",
-  "adminPassword":"admin",
-  "servicePassword":"service",
-  "readPassword":"read",
-  "key": "./certs/server-key.pem",
-  "cert":"./certs/server-crt.pem",
-  "ca": "./certs/ca-crt.pem"
-}
