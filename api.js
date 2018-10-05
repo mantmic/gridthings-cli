@@ -2,7 +2,6 @@ var express    = require('express');        // call express
 const enableWs = require('express-ws') ;
 var https = require('https');
 var app        = express();                 // define our app using express
-var expressWs = enableWs(app);
 
 var gtapi = require('./gt-api.js');
 var gtswp = require('./gt-software-package.js');
@@ -23,6 +22,22 @@ app.use(bodyParser.json());
 // ROUTES FOR OUR API
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
+
+// REGISTER OUR ROUTES -------------------------------
+app.use('/', router);
+
+// START THE SERVER
+// =============================================================================
+//app.listen(port);
+const port = 443 ;
+var server = https.createServer({
+  key: fs.readFileSync(serverConfig.key),
+  cert: fs.readFileSync(serverConfig.cert),
+  ca: fs.readFileSync(serverConfig.ca)
+}, app) ;
+
+
+var expressWs = enableWs(app,server);
 
 router.get('/', function(req, res) {
     res.json({ message: 'Gridthings API' });
@@ -57,8 +72,6 @@ var stream = require('./stream-api.js') ;
 const config = defaults.get_config();
 var servers = Object.keys(config) ;
 servers = servers.filter(s => s != 'server') ;
-servers = servers.filter(s => s != 'vm-napsbx006.domain.dev.int') ;
-servers = servers.filter(s => s != 'ched-01.gridthin.gs') ;
 
 //filder out the
 
@@ -89,22 +102,22 @@ servers.forEach(function(s){
   try {
     router.ws('/' + streamBaseRoute + '/' + server, (ws, req) => {
       console.log('Client connected to ' + streamBaseRoute + '/' + server);
+      ws.send(JSON.stringify({message:"Send API authencation key to access stream"})) ;
       ws.upgradeReq = req;
       //by default, set the authenticated fault to false
       ws.authenticated = false ;
       //tell client to send key
-      ws.send({message:"Send API authencation key to access stream"}) ;
       ws.on('message', msg => {
         checkReadAccess(msg, server,function(access){
           if(access){
             ws.authenticated = true ;
-            ws.send({message:"Access granted"})
+            ws.send(JSON.stringify({message:"Access granted"}))
           } else {
-            ws.send({message:"Access denied"})
+            ws.send(JSON.stringify({message:"Access denied"}))
           }
         }.bind(this),
         function(e){
-          ws.send({message:"error",error:e})
+          ws.send(JSON.stringify({message:"error",error:e}))
         }.bind(this)) ;
       })
       ws.on('close', () => {
@@ -554,16 +567,7 @@ router.get('/oilmonitor/image/:endpoint', function(req, res) {
  }.bind(this));
 });
 
-// REGISTER OUR ROUTES -------------------------------
-app.use('/', router);
 
-// START THE SERVER
-// =============================================================================
-//app.listen(port);
-const port = 443 ;
-https.createServer({
-  key: fs.readFileSync(serverConfig.key),
-  cert: fs.readFileSync(serverConfig.cert),
-  ca: fs.readFileSync(serverConfig.ca)
-}, app).listen(port);
+server.listen(port);
+
 console.log('GT Api running on port ' + port);

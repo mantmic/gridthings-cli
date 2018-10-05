@@ -228,12 +228,11 @@ aws cloudformation create-stack --stack-name gtapi --capabilities CAPABILITY_NAM
 ```
 
 Delete stack
-
 ```
 aws cloudformation delete-stack --stack-name gtapi
 ```
 
 Add ssh key
 ```
-cat ~/.ssh/id_rsa.pub | (ssh -i mantfeld-laptop.pem ubuntu@13.236.179.43 "cat >> ~/.ssh/authorized_keys")
+cat ~/.ssh/id_rsa.pub | (ssh -i ~/ots/mantfeld-laptop.pem ubuntu@13.239.24.9 "cat >> ~/.ssh/authorized_keys")
 ```
