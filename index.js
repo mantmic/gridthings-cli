@@ -26,6 +26,7 @@ program
  .command('tm',       'Configure the IoT Transformer Monitor for common usage scenarios (requires Transformer Monitor (slim or cal) application to be loaded on the Gridthings Core)')
  .command('reboot',   'Reboot the specified endpoint')
  .command('environment', 'Manage the accessible Gridthings environments')
+ .command('console',  'open a console on the specified device')
  .command('command', 'Queue commands to be executed on endpoint')
  // .on('command:*', function()
  // {
