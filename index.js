@@ -6,6 +6,7 @@ program
   '\n  ' +
   '\n  To access Gridthings Edge services you must have a client certificate for your instance in ~/.gtcli/' +
   '\n  ')
+ .command('login', 'Log into the gtcli application')
  .command('software', 'Manage the software packages installed on an endpoint')
  .command('device',   'Manage the device object of an endpoint')
  .command('server',   'Manage the server object of an endpoint')
