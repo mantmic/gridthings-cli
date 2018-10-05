@@ -17,7 +17,8 @@ const { KinesisReadable } = require('kinesis-streams')
 
 
 var readline = require('readline');
-
+var rl = readline.createInterface(process.stdin, process.stdout);
+var logging = false;
 
 function make_ws_url(server, jwt_claim)
 {
@@ -43,7 +44,6 @@ function print_record(endpoint, record)
 {
   if (!filter(endpoint, record))
   {
-    
     if ((record.type == "REGISTRATION") || (record.type == "DEREGISTRATION"))
     {
        console.log(record.type + " " + record.endpoint + "\t" + record.timestamp + "\t" + "lifetime " + record.data.lifetime);
@@ -54,11 +54,11 @@ function print_record(endpoint, record)
     }
     else if (record.type == "NOTIFICATION")
     {
-
+      if (logging) console.log(record.data.val.value.trim());
     }
     else
     {
-      console.log(record.data);
+     
     }
   }
 }
@@ -183,7 +183,7 @@ if (the_endpoint == null)
   process.exit(1);
 }
 
-var rl = readline.createInterface(process.stdin, process.stdout);
+
 rl.setPrompt('gt-core $ ');
 rl.prompt();
 rl.on('line', function(line) 
@@ -191,26 +191,34 @@ rl.on('line', function(line)
   line = line.trim();
 
   if (line === "exit") rl.close();
-  if (line === "") 
+  else if (line === "log on")
+  { 
+    logging = true;
+  } 
+  else if (line === "log off") 
+  {
+    logging = false;
+  } 
+  else if (line === "") 
   {
     rl.prompt();
-    return;
   }
-
-  gtapi.core_exec("30006/0/2", line, the_endpoint, the_server, function()
+  else
   {
-    gtapi.core_get("30006/0/0", the_endpoint, the_server, function(response)
+    gtapi.core_exec("30006/0/2", line, the_endpoint, the_server, function()
     {
-      var response_object = JSON.parse(response.text);
-      console.log(response_object.content.value);
-      rl.prompt();
-    }, 
-    function(error)
-    {
-      console.error("failed to get response");
-      rl.prompt();
-    });
-    
+      gtapi.core_get("30006/0/0", the_endpoint, the_server, function(response)
+      {
+        var response_object = JSON.parse(response.text);
+        console.log(response_object.content.value);
+        rl.prompt();
+      }, 
+      function(error)
+      {
+        console.error("failed to get response");
+        rl.prompt();
+      });
+  }
   }, 
   function(error)
   {

@@ -57,7 +57,7 @@ function print_record(endpoint, record)
       }
       else if (record.type == "NOTIFICATION")
       {
-
+        
       }
       else
       {
