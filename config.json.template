@@ -2,5 +2,8 @@
   "mongoUri":"mongodb://localhost:27017/test",
   "adminPassword":"admin",
   "servicePassword":"service",
-  "readPassword":"read"
+  "readPassword":"read",
+  "key": "./certs/server-key.pem",
+  "cert":"./certs/server-crt.pem",
+  "ca": "./certs/ca-crt.pem"
 }

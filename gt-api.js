@@ -1533,6 +1533,97 @@ exports.firmware_cancel = function(urn, server, resolve, reject)
   }, reject);
 }
 
+exports.context_get = function(urn, server, resolve, reject, no_cache = false){
+  var hit_leshan = function(){
+    exports.core_get("30008", urn, server,
+      function(response){
+        cache_core_value(response,urn,server);
+        resolve(lwm2m_object_response_to_map(response))
+      },
+      function(error){
+        if (reject) reject(error);
+        else log_error("fetching context resources", error);
+      });
+  }
+  if(no_cache){
+    hit_leshan()
+  } else {
+    exports.get_latest_value(urn,"30008/0/0",server,
+      function(response){
+        //check if the timestamp is new enough, then decide whether to hit leshan or continue
+        if(response.timestamp == null){
+          hit_leshan()
+        } else if (new Date - new Date(response.timestamp + '+00:00') > max_core_age){
+          hit_leshan()
+        } else {
+          exports.get_endpoint(urn,server,
+            function(endpoint){
+              var map_object = exports.endpoint_object_to_map(endpoint[0], '30008') ;
+              if(map_object == null){
+                hit_leshan();
+              } else {
+                resolve(map_object)
+              }
+            },
+            function(error){
+              console.log(error)
+            }
+          )
+        }
+      },
+      function(error){
+        log_error("fetching context resources", error);
+        hit_leshan();
+      }
+    )
+  }
+}
+;
+
+//call to get all leshan values for an endpoint. This should be used sparingly
+//first a function to return a promise for a leshan resource
+function core_promise_get(path, urn, server){
+  console.log(path, urn,server)
+  return new Promise(function(resolve,reject){
+    try{
+      exports.core_get(path,urn,server,function(data){
+        resolve(data)
+      }.bind(this), function(e){
+        reject(e)
+      }.bind(this))
+    } catch(e){
+      reject(e)
+    }
+  });
+}
+;
+
+//the Promise objects are throwing errors due to some of these requests not working. I can't find the part that's not handling the error! 
+let excludedResources = ['','1','4','30000'] ;
+exports.leshan_dump = function(urn,server,callback = function(data){console.log(data)}){
+  exports.core_get('',urn,server,function(r){
+    var lesh = JSON.parse(r.text);
+    var resource = lesh.objectLinks.map(x => x.url.split('/')[1]) ;
+    resource = Array.from(new Set(resource)) ;
+    resource = resource.filter(x => excludedResources.indexOf(x) < 0) ;
+    console.log(resource);
+    let leshanValues = resource.map(x => core_promise_get(x,urn,server));
+    leshanValues.forEach(function(l){
+      l.catch(error => console.log(error))
+    }) ;
+    Promise.all(leshanValues).then(function(data){
+      var returnObject = {} ;
+      data.forEach(function(d){
+        cache_core_value(d,urn,server);
+        console.log(JSON.parse(d.text)) ;
+        returnObject = lwm2m_object_response_to_map(d) ;
+      })
+      callback(returnObject);
+    })
+  })
+}
+;
+
 /////////////////////////////////////////////////////////////////////////////////////////
 // Security functions
 function make_bs_url(server)

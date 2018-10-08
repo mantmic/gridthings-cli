@@ -12,6 +12,11 @@ var fs = require('fs') ;
 
 const serverConfig = require('./config.json') ;
 
+
+//swagger config
+
+
+
 // configure app to use bodyParser()
 // this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -144,7 +149,29 @@ servers.forEach(function(s){
 */
 var auth = require('./auth.js') ;
 
-//route to get token
+/**
+ * @swagger
+ * path: /token
+ * operations:
+ *   -  httpMethod: POST
+ *      summary: Login with username and password
+ *      notes: Returns a token
+ *      responseClass: Token
+ *      nickname: token
+ *      consumes:
+ *        - text/json
+ *      parameters:
+ *        - name: userId
+ *          description: Your username
+ *          paramType: body
+ *          required: true
+ *          dataType: string
+ *        - name: password
+ *          description: Your password
+ *          paramType: body
+ *          required: true
+ *          dataType: string
+ */
 router.post('/token', function(req, res) {
   auth.getToken(req.body.userId,req.body.password,
     function(token){
@@ -183,14 +210,15 @@ function getRequestServer(req, userObject){
   if(defaultEnvironment == null){
     defaultEnvironment = Object.keys(userObject.environment)[0];
   }
-  if(req.query.server == undefined){
+  var queryServer = req.query.server != null ? req.query.server : req.body.server ;
+  if(queryServer == undefined){
     return(defaultEnvironment);
   } else {
-    if(userObject.environment[req.query.server] == null){
+    if(userObject.environment[queryServer] == null){
       //return default if server not found
       return(defaultEnvironment);
     } else {
-      return(req.query.server);
+      return(queryServer);
     }
   }
 }
@@ -495,6 +523,7 @@ router.post('/command/push', function(req, res) {
 router.post('/value/push', function(req, res) {
   processRequest(req,res,function(userObject){
     var server = getRequestServer(req,userObject) ;
+    console.log(server);
     if(userObject.environment[server].powerUser){
       //create a process
       var timestamp = req.body.timestamp ;
@@ -519,6 +548,7 @@ router.post('/value/push', function(req, res) {
 router.get('/value/latest/:endpoint', function(req, res) {
   processRequest(req,res,function(userObject){
     const server = getRequestServer(req,userObject) ;
+    console.log(server);
     //get the latest value of the oil monitor value
     var timestamp = req.query.atTimestamp ;
     if(timestamp == null){
@@ -546,6 +576,7 @@ const oilmonitorImage = "30007/0/1" ;
 router.get('/oilmonitor/image/:endpoint', function(req, res) {
   processRequest(req,res,function(userObject){
     const server = getRequestServer(req,userObject) ;
+    console.log(server);
     //get the latest value of the oil monitor value
     var timestamp = req.query.atTimestamp ;
     if(timestamp == null){

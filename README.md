@@ -206,6 +206,38 @@ updated
 
 > sudo npm link
 
+# API
+
+Details on API endpoints can be found at the swagger docs at the root of the API deployment
+
+```
+https://api.gridthin.gs
+```
+
+## Websockets
+
+For real-time data streams,there is a websocket for every environment. Each are hosted at wss://{apihost}/stream/{environment}
+
+Example
+```
+wss:api.gridthin.gs/stream/ched-01.gridthin.gs
+```
+
+Once connecting, the client must send a valid token to the host before the stream will send the data to the client. The host will send the following message when a client connects.
+```
+{
+  "message": "Send API authencation key to access stream"
+}
+```
+
+Once authenticated, the websocket will send the following message to the client
+```
+{
+  "message": "Access granted"
+}
+```
+
+Any other message will either indicate an error, or will deny a user access to the environment due to that user's permissions.
 
 # API Deployment
 
