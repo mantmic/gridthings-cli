@@ -9,6 +9,7 @@ var gtswp = require('./gt-software-package.js');
 var bodyParser = require('body-parser');
 
 var fs = require('fs') ;
+var bmp = require("./bmp-565.js");
 
 const serverConfig = require('./config.json') ;
 
@@ -592,7 +593,6 @@ const oilmonitorImage = "30007/0/1" ;
 router.get('/oilmonitor/image/:endpoint', function(req, res) {
   processRequest(req,res,function(userObject){
     const server = getRequestServer(req,userObject) ;
-    console.log(server);
     //get the latest value of the oil monitor value
     var timestamp = req.query.atTimestamp ;
     if(timestamp == null){
@@ -601,9 +601,11 @@ router.get('/oilmonitor/image/:endpoint', function(req, res) {
     gtapi.get_latest_value(req.params.endpoint,oilmonitorImage, server,
       function(data){
         if(data.value != null){
-          console.log(data.value);
+          var raw_image = Buffer.from(data.value, 'base64');
+          var bmp_data = { data:raw_image, width:320, height:240 };
+          var bmp_file = bmp(bmp_data);
           res.writeHead(200, {'Content-Type': 'image/png' });
-          res.end(new Buffer(data.value,'base64'), 'binary');
+          res.end(new Buffer(bmp_file.data,'base64'), 'binary');
           //res.json(data.value) ;
         } else {
           res.status(404).send({message:"Image not found"})

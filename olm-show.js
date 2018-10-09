@@ -14,14 +14,14 @@ program
   .option('-v, --verbose', 'Be verbose')
   .action(function(urn, server) {
     wrongArguments = false;
-   
-    if (program.verbose) 
+
+    if (program.verbose)
     {
       gtapi.log_level = 1;
     }
-  
+
     gtapi.get_latest_value(urn, "30007/0/1", server,
-      function(response) 
+      function(response)
       {
         var raw_image = Buffer.from(response.value, 'base64');
 
