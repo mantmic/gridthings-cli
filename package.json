@@ -141,6 +141,7 @@
     "express-ws": "^4.0.0",
     "hashids": "^1.1.1",
     "javascript-state-machine": "^3.1.0",
+    "jimp": "^0.5.3",
     "jsonwebtoken": "^8.3.0",
     "kinesis-streams": "^0.7.0",
     "lazy.js": "^0.5.0",

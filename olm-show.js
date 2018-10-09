@@ -5,6 +5,7 @@ var gtapi = require('./gt-api.js');
 var Helpers = require('./dred-helpers.js');
 var defaults = require('./defaults.js');
 var bmp = require("./bmp-565.js");
+var jimp = require('jimp');
 
 const fs = require('fs');
 var wrongArguments = true;
@@ -31,6 +32,15 @@ program
 
         fs.writeFileSync("tmp.bmp", bmp_file.data);
 
+        jimp.read('tmp.bmp')
+          .then(image => {
+            return image
+              .crop(0,65,290,110)
+              .write('tmp-cropped.bmp'); // save
+          })
+          .catch(err => {
+            console.error(err);
+          });
       },
       function(error)
       {
