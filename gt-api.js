@@ -493,14 +493,18 @@ exports.command_complete = function(endpoint_command_id, server, response, statu
 
 //function to push a value
 exports.value_push = function(endpoint, resource, value, timestamp, server,resolve, reject){
-  exports.history_exec(
-    'rpc/insert_value',
-    {
-      uri_path:resource,
-      endpoint:endpoint,
-      value:value,
-      timestamp:timestamp
-    },server,resolve,reject,singleObject = true);
+  try{
+    exports.history_exec(
+      'rpc/insert_value',
+      {
+        uri_path:resource,
+        endpoint:endpoint,
+        value:value,
+        timestamp:timestamp
+      },server,resolve,reject,singleObject = true);
+  } catch(e){
+    reject(e)
+  }
 }
 ;
 
@@ -531,6 +535,28 @@ exports.get_endpoint = function(endpoint, server, resolve, reject){
     payload.push('endpoint=eq.' + endpoint)
   }
   exports.history_get("endpoint", payload, server,
+    function(response) {
+      try
+      {
+        var contents = JSON.parse(response.text);
+        resolve(contents);
+      }
+      catch(e)
+      {
+        if (reject) reject(e.message);
+      }
+    },
+    function(error){
+      if (reject) reject(error);
+      else log_error("getting history", error);
+    }
+  );
+}
+;
+
+exports.get_value_by_id = function(value_id, server, resolve, reject){
+  var payload = ["value_id=eq." + value_id];
+  exports.history_get("values", payload, server,
     function(response) {
       try
       {
@@ -588,6 +614,7 @@ exports.history_get = function(path, query, server, resolve, reject)
     var certs = get_certs(server);
     var url = make_history_url(path, server);
     url += add_query(query);
+    console.log(url);
     log_debug("GET " + url);
     request.get(url).ca(certs.ca).cert(certs.crt).key(certs.key).end(function(error, response) {
       if (error)
@@ -855,10 +882,18 @@ function lwm2m_object_response_to_value(response, endpoint){
 ;
 
 function cache_core_value(response,endpoint, server){
-  let value = lwm2m_object_response_to_value(response,endpoint) ;
-  value.forEach(function(v){
-    exports.value_push(v.endpoint, v.uri_path, v.value, v.timestamp, server,function(data){return}, function(data){return})
-  });
+  try {
+    let value = lwm2m_object_response_to_value(response,endpoint) ;
+    value.forEach(function(v){
+      try{
+          exports.value_push(v.endpoint, v.uri_path, v.value, v.timestamp, server,function(data){return}, function(data){return})
+      } catch(e2){
+        console.log(e2)
+      }
+    });
+  } catch(e1){
+    console.log(e1)
+  }
 }
 ;
 
@@ -1581,16 +1616,19 @@ exports.context_get = function(urn, server, resolve, reject, no_cache = false){
 ;
 
 //call to get all leshan values for an endpoint. This should be used sparingly
-//first a function to return a promise for a leshan resource
-function core_promise_get(path, urn, server){
+//first a function to return a promise for a leshan resource, it can executed after a set period of time to help with not spamming leshan
+function core_promise_get(path, urn, server, waitTime = 0){
   console.log(path, urn,server)
   return new Promise(function(resolve,reject){
     try{
-      exports.core_get(path,urn,server,function(data){
-        resolve(data)
-      }.bind(this), function(e){
-        reject(e)
-      }.bind(this))
+      setTimeout(function(){
+        exports.core_get(path,urn,server,function(data){
+          console.log(path);
+          resolve(data)
+        }.bind(this), function(e){
+          reject(e)
+        }.bind(this))
+      }.bind(this), waitTime)
     } catch(e){
       reject(e)
     }
@@ -1598,25 +1636,43 @@ function core_promise_get(path, urn, server){
 }
 ;
 
-//the Promise objects are throwing errors due to some of these requests not working. I can't find the part that's not handling the error! 
-let excludedResources = ['','1','4','30000'] ;
-exports.leshan_dump = function(urn,server,callback = function(data){console.log(data)}){
+//the Promise objects are throwing errors due to some of these requests not working. I can't find the part that's not handling the error!
+//This has logic to only request each resource in succession in 5 second intervals (specified as sleepIncrement below)- it may help with the stability of the device
+//The way this has been implemented is to avoid holding up the worker pool
+let excludedResources = [''] ;
+const sleepIncrement = 5000 ;
+exports.leshan_dump = function(urn,server,callback = function(data){console.log(data)}, reject = function(e){console.log(e)}){
   exports.core_get('',urn,server,function(r){
     var lesh = JSON.parse(r.text);
     var resource = lesh.objectLinks.map(x => x.url.split('/')[1]) ;
     resource = Array.from(new Set(resource)) ;
     resource = resource.filter(x => excludedResources.indexOf(x) < 0) ;
-    console.log(resource);
-    let leshanValues = resource.map(x => core_promise_get(x,urn,server));
-    leshanValues.forEach(function(l){
-      l.catch(error => console.log(error))
-    }) ;
+    //iterate resources serially
+    var returnObject = {} ;
+    let leshanValues = [] ;
+    var sleepTime = sleepIncrement ;
+    resource.forEach(function(r){
+      var requestPromise = core_promise_get(r,urn,server, sleepTime) ;
+      sleepTime = sleepTime + sleepIncrement ;
+      requestPromise.catch(error => console.log("Error")) ;
+      leshanValues.push(requestPromise);
+      /*Promise.resolve(requestPromise).then(function(d){
+        cache_core_value(d,urn,server);
+        console.log(JSON.parse(d.text)) ;
+        returnObject = lwm2m_object_response_to_map(d) ;
+      })*/
+    })
+    ;
     Promise.all(leshanValues).then(function(data){
       var returnObject = {} ;
       data.forEach(function(d){
         cache_core_value(d,urn,server);
-        console.log(JSON.parse(d.text)) ;
-        returnObject = lwm2m_object_response_to_map(d) ;
+        try{
+          var rawResponse = JSON.parse(d.text) ;
+          returnObject[rawResponse.content.id] = lwm2m_object_response_to_map(d) ;
+        } catch(e){
+          console.log("No resource id") ;
+        }
       })
       callback(returnObject);
     })

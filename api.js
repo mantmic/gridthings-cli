@@ -565,6 +565,22 @@ router.get('/value/latest/:endpoint', function(req, res) {
  }.bind(this));
 });
 
+//route to get value by the value_id
+router.get('/value/:value_id', function(req, res) {
+  processRequest(req,res,function(userObject){
+    const server = getRequestServer(req,userObject) ;
+    console.log(server);
+    gtapi.get_value_by_id(req.params.value_id,server,
+      function(data){
+        res.json(data)
+      }.bind(this),
+      function(e){
+        res.status(500).send({message:e})
+      }.bind(this)
+    );
+ }.bind(this));
+});
+
 
 //route for oil monitor endpoints
 //route to get the image serialized as png
@@ -585,8 +601,10 @@ router.get('/oilmonitor/image/:endpoint', function(req, res) {
     gtapi.get_latest_value(req.params.endpoint,oilmonitorImage, server,
       function(data){
         if(data.value != null){
+          console.log(data.value);
           res.writeHead(200, {'Content-Type': 'image/png' });
           res.end(new Buffer(data.value,'base64'), 'binary');
+          //res.json(data.value) ;
         } else {
           res.status(404).send({message:"Image not found"})
         }
@@ -596,6 +614,20 @@ router.get('/oilmonitor/image/:endpoint', function(req, res) {
       }.bind(this),timestamp
     );
  }.bind(this));
+});
+
+router.get('/lwm2m/values/:endpoint', function(req, res) {
+  processRequest(req,res,function(userObject){
+    const server = getRequestServer(req,userObject) ;
+    gtapi.leshan_dump(req.params.endpoint, server,
+      function(data){
+        res.json(data)
+      }.bind(this),
+      function(e){
+        res.status(500).send({message:e})
+      }.bind(this)
+    );
+  }.bind(this));
 });
 
 
