@@ -363,7 +363,6 @@ exports.config_delete = function(path, query, server, resolve, reject)
   }
 }
 
-
 function make_history_url(path, server)
 {
   return "https://history." + defaults.check_server_name(server) + "/" + path;
@@ -551,8 +550,8 @@ exports.get_endpoint = function(endpoint, server, resolve, reject){
       else log_error("getting history", error);
     }
   );
-}
-;
+};
+
 
 exports.get_value_by_id = function(value_id, server, resolve, reject){
   var payload = ["value_id=eq." + value_id];
@@ -604,8 +603,7 @@ exports.get_latest_value = function(endpoint,resource, server, resolve,reject,ma
       if (reject) reject(error);
       else log_error("getting history", error);
     });
-}
-;
+};
 
 exports.history_get = function(path, query, server, resolve, reject)
 {
@@ -630,14 +628,11 @@ exports.history_get = function(path, query, server, resolve, reject)
   }
 }
 
-
-
 function history_get_newest(newest)
 {
   if (newest == 'now') return new Date().toISOString();
   else return newest;
 }
-
 
 function history_get_oldest(newest, oldest)
 {
