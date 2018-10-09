@@ -27,7 +27,9 @@ program
  .command('reboot',   'Reboot the specified endpoint')
  .command('environment', 'Manage the accessible Gridthings environments')
  .command('console',  'open a console on the specified device')
- .command('command', 'Queue commands to be executed on endpoint')
+ .command('command',  'Queue commands to be executed on endpoint')
+ .command('blob',     'Manage blob trasfers from an endpoint')
+ .command('olm',      'Manage oil level monitor endpoints')
  // .on('command:*', function()
  // {
  //     program.help();

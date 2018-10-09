@@ -53,7 +53,7 @@ function ws_stream(endpoint, resource, server, jwt_secret, verbose = false, call
   });
 
   ws.on('error', function error(err) {
-    error("web socket error " + err);
+    console.error("web socket error " + err);
   });
 
   ws.on('message', function incoming(data) {
@@ -120,7 +120,7 @@ function kinesis_stream(endpoint, resource, server, verbose = false, callback = 
     try
     {
       var record = JSON.parse(record_Buffer.toString('ascii'));
-      callback(record);
+      callback(record.endpoint, record);
     }
     catch(e)
     {
