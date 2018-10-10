@@ -208,6 +208,32 @@ updated
 
 # API
 
+## gtcli certificates
+The gtcli server certficates are stored in this repository, however they are encrypted.
+
+To generate a new set of certificates run the following commands with a strong encryption key
+```
+tar -cf .gtcli.tar .gtcli
+openssl aes-256-cbc -e -in .gtcli.tar -out .gtcli.aes -k "yourkey"
+```
+
+To restore the certificates run the following commands
+
+```
+openssl aes-256-cbc -d -in .gtcli.aes -k "yourkey" >> .gtcli.tar
+tar -xvf .gtcli.tar
+```
+
+## Docker build
+
+The image must be built with a build argument containing the encryption key of the certficates
+
+```
+docker build --build-arg gtcli_key="yourkey" -t gtapi .
+```
+
+## API Documentation
+
 Details on API endpoints can be found at the swagger docs at the root of the API deployment
 
 ```
@@ -215,6 +241,8 @@ https://api.gridthin.gs
 ```
 
 ## Websockets
+
+Websockets are not covered by the swagger docs.
 
 For real-time data streams,there is a websocket for every environment. Each are hosted at wss://{apihost}/stream/{environment}
 
@@ -239,7 +267,29 @@ Once authenticated, the websocket will send the following message to the client
 
 Any other message will either indicate an error, or will deny a user access to the environment due to that user's permissions.
 
-# API Deployment
+## API Deployment
+
+Running the following command will build the swagger documents and run the api. You will need root access to run the api on port 443.
+
+```
+sudo npm run api
+```
+
+### Docker repository
+
+The docker repository for the gtcli api is 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+
+To push an updated image to the repository run the following commands
+
+```
+cd gridthings-cli
+docker build -t gtapi .
+$(aws ecr get-login --region ap-southeast-2)
+docker tag gtapi 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+docker push 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+```
+
+### Setup
 
 Ensure that whatever machine this deployment will run from has gtcli configured to access all required environments.
 

@@ -9,12 +9,9 @@ var gtswp = require('./gt-software-package.js');
 var bodyParser = require('body-parser');
 
 var fs = require('fs') ;
+var bmp = require("./bmp-565.js");
 
 const serverConfig = require('./config.json') ;
-
-
-//swagger config
-
 
 
 // configure app to use bodyParser()
@@ -31,6 +28,7 @@ var router = express.Router();              // get an instance of the express Ro
 // REGISTER OUR ROUTES -------------------------------
 app.use('/', router);
 
+
 // START THE SERVER
 // =============================================================================
 //app.listen(port);
@@ -43,11 +41,18 @@ var server = https.createServer({
 
 
 var expressWs = enableWs(app,server);
+//swagger config
+swaggerUi = require('swagger-ui-express'),
+swaggerDocument = require('./swagger/swagger.json');
 
+router.use('/', swaggerUi.serve);
+router.get('/', swaggerUi.setup(swaggerDocument));
+
+/*
 router.get('/', function(req, res) {
     res.json({ message: 'Gridthings API' });
 });
-
+*/
 // more routes for our API will happen here
 
 
@@ -149,29 +154,6 @@ servers.forEach(function(s){
 */
 var auth = require('./auth.js') ;
 
-/**
- * @swagger
- * path: /token
- * operations:
- *   -  httpMethod: POST
- *      summary: Login with username and password
- *      notes: Returns a token
- *      responseClass: Token
- *      nickname: token
- *      consumes:
- *        - text/json
- *      parameters:
- *        - name: userId
- *          description: Your username
- *          paramType: body
- *          required: true
- *          dataType: string
- *        - name: password
- *          description: Your password
- *          paramType: body
- *          required: true
- *          dataType: string
- */
 router.post('/token', function(req, res) {
   auth.getToken(req.body.userId,req.body.password,
     function(token){
@@ -189,7 +171,11 @@ function processRequest(req,res,resolve = function(userObject){console.log(userO
   //try to get the token either from the parameters or from the headers
   var token = req.headers['x-access-token'];
   if(token == null){
-    token = req.query.token
+    if(req.query.token){
+      token = req.query.token
+    } else if(req.body.token){
+      token = req.body.token
+    }
   }
   try {
     if (!token){
@@ -592,18 +578,21 @@ const oilmonitorImage = "30007/0/1" ;
 router.get('/oilmonitor/image/:endpoint', function(req, res) {
   processRequest(req,res,function(userObject){
     const server = getRequestServer(req,userObject) ;
-    console.log(server);
     //get the latest value of the oil monitor value
     var timestamp = req.query.atTimestamp ;
     if(timestamp == null){
       timestamp = new Date('2199-12-31') ;
+    } else {
+      timestamp = new Date(timestamp);
     }
     gtapi.get_latest_value(req.params.endpoint,oilmonitorImage, server,
       function(data){
         if(data.value != null){
-          console.log(data.value);
+          var raw_image = Buffer.from(data.value, 'base64');
+          var bmp_data = { data:raw_image, width:320, height:240 };
+          var bmp_file = bmp(bmp_data);
           res.writeHead(200, {'Content-Type': 'image/png' });
-          res.end(new Buffer(data.value,'base64'), 'binary');
+          res.end(new Buffer(bmp_file.data,'base64'), 'binary');
           //res.json(data.value) ;
         } else {
           res.status(404).send({message:"Image not found"})
