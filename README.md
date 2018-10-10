@@ -209,11 +209,11 @@ updated
 # API
 
 ## gtcli certificates
-The gtcli server certficates are stored in this repository, however they are encrypted.
+The gtcli server certficates, as well as the ssl certifcates used by the api, are stored in this repository, however they are encrypted.
 
 To generate a new set of certificates run the following commands with a strong encryption key
 ```
-tar -cf .gtcli.tar .gtcli
+tar -cf .gtcli.tar .gtcli certs
 openssl aes-256-cbc -e -in .gtcli.tar -out .gtcli.aes -k "yourkey"
 ```
 

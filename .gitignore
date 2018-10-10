@@ -58,3 +58,17 @@ typings/
 .env
 
 .gtcli/
+.gtcli.tar
+
+test/
+localdb/
+certs/
+gridthings-api.parameters
+
+test.js
+
+swagger/swagger.json
+
+docker-compose-local.yml
+
+.env
