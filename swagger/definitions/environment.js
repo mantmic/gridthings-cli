@@ -17,10 +17,17 @@ exports.definitions = {
 ;
 
 exports.paths = {
-  "/environment/list": {
+  "/environment/list?token={token}": {
     "get": {
       "tags": [
         "environment"
+      ],
+      "parameters": [
+        {
+          "name": "token",
+          "in": "path",
+          "description": "The token, returned from /token, to use for authentication"
+        }
       ],
       "summary": "Get environments accessible to current user",
       "responses": {
@@ -33,7 +40,7 @@ exports.paths = {
       }
     }
   },
-  "/environment/set/{server}": {
+  "/environment/set/{server}?token={token}": {
     "get": {
       "tags": [
         "environment"
@@ -44,6 +51,11 @@ exports.paths = {
           "in": "path",
           "description": "The name of the environment to set as default",
           "example": "ched-01.gridthin.gs"
+        },
+        {
+          "name": "token",
+          "in": "path",
+          "description": "The token, returned from /token, to use for authentication"
         }
       ],
       "summary": "Set default environment for user",
