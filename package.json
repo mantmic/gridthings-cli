@@ -117,8 +117,7 @@
     "gtcli-command": "./command.js",
     "gtcli-command-show": "./command-show.js",
     "gtcli-command-push": "./command-push.js",
-    "gtcli-command-delete": "./command-delete.js",
-    "gtcli-login": "./login.js"
+    "gtcli-command-delete": "./command-delete.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
