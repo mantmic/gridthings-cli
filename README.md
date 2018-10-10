@@ -241,6 +241,28 @@ Any other message will either indicate an error, or will deny a user access to t
 
 # API Deployment
 
+Running the following command will build the swagger documents and run the api. You will need root access to run the api on port 443.
+
+```
+sudo npm run api
+```
+
+## Docker repository
+
+The docker repository for the gtcli api is 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+
+To push an updated image to the repository run the following commands
+
+```
+cd gridthings-cli
+docker build -t gtapi .
+$(aws ecr get-login --region ap-southeast-2)
+docker tag gtapi 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+docker push 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+```
+
+## Setup
+
 Ensure that whatever machine this deployment will run from has gtcli configured to access all required environments.
 
 Copy the contents of .gtcli to this repository directory prior to deployment.
