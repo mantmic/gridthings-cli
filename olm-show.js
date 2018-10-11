@@ -27,10 +27,11 @@ program
 
         var bmp_data = { data:raw_image, width:320, height:240 };
 
-        var bmp_file = bmp(bmp_data);
+        fs.writeFileSync("tmp.jpg", bmp_data.data); // jpeg doesn't need conversion
 
-        fs.writeFileSync("tmp.bmp", bmp_file.data);
-
+        // Note: Use if using old camera firmware with BMP565 encoding
+        //var bmp_file = bmp(bmp_data);
+        //fs.writeFileSync("tmp.bmp", bmp_file.data);
       },
       function(error)
       {
