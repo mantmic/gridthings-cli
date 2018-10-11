@@ -23,6 +23,6 @@ jobs:
               aws configure set default.region ap-southeast-2
               aws configure set default.output json
               eval $(aws ecr get-login)
-              docker tag ggridthings/api:latest 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api:latest
+              docker tag gridthings/api:latest 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api:latest
               docker push 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api:latest
             fi
