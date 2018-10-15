@@ -31,7 +31,7 @@ program
     var obj = {
       "id":"0",
       "resources":[
-        {"id":5,"value":x_int}
+        {"id":5,"value":quality_int}
       ]
     };
 
