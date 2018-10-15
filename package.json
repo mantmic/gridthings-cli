@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "start":"node swagger/generateSwagger.js && node api.js"
+    "start": "node swagger/generateSwagger.js && node api.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,10 @@
     "gtcli-console": "./console.js",
     "gtcli-olm": "./olm.js",
     "gtcli-olm-show": "./olm-show.js",
+    "gtcli-olm-flash": "./olm-flash.js",
+    "gtcli-olm-quality": "./olm-quality.js",
+    "gtcli-olm-crop": "./olm-crop.js",
+    "gtcli-olm-latest": "./olm-latest.js",
     "gtcli-blob": "./blob.js",
     "gtcli-blob-read": "./blob-read.js",
     "gtcli-blob-list": "./blob-list.js",
