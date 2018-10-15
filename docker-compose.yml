@@ -21,7 +21,7 @@ services:
            - mongo:mongo
        networks:
            - gt
-       command: mongo --host mongo --eval  "db.getSiblingDB('gt').createUser({user:'root', pwd:'root', roles:[{role:'readWrite',db:'gt'}]});"
+       command: bash -c "sleep 5 && mongo --host mongo --eval  \"db.getSiblingDB('gt').createUser({user:'root', pwd:'root', roles:[{role:'readWrite',db:'gt'}]});\""
        depends_on:
         - mongo
     gtcli:

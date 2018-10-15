@@ -3,49 +3,59 @@
 var program = require('commander');
 var gtapi = require('./gt-api.js');
 var Helpers = require('./dred-helpers.js');
+<<<<<<< HEAD
 var defaults = require('./defaults.js');
 var bmp = require("./bmp-565.js");
 var jimp = require('jimp');
+=======
+>>>>>>> 80e7dbe532f90b373aa2f0ceaa69025241b4b2a3
 
-const fs = require('fs');
 var wrongArguments = true;
+
+function print_olm(olm_object, urn)
+{
+  var olm_resources = {};
+  olm_object.content.resources.map(function(i) { olm_resources[i.id] = i.value; });
+
+  console.info("Oil Level Monitor " + urn);
+  console.info("  Name:           " + olm_resources[0]);
+  console.info("  Crop X:         " + olm_resources[1]);
+  console.info("  Crop Y:         " + olm_resources[2]);
+  console.info("  Crop Width:     " + olm_resources[3]);
+  console.info("  Crop Height:    " + olm_resources[4]);
+  console.info("  JPEG Quality:   " + olm_resources[5]);
+  console.info("  LED 1:          " + olm_resources[6]);
+  console.info("  LED 2:          " + olm_resources[7]);
+  console.info("  LED 3:          " + olm_resources[8]);
+}
 
 program
   .arguments('<urn> [server]')
   .option('-v, --verbose', 'Be verbose')
+  .option('-j, --json', 'Print repsonse as JSON')
   .action(function(urn, server) {
     wrongArguments = false;
    
-    if (program.verbose) 
-    {
+    if (program.verbose) {
       gtapi.log_level = 1;
     }
-  
-    gtapi.get_latest_value(urn, "30007/0/1", server,
-      function(response) 
+
+    gtapi.get_latest_value('30009/0/', urn, server, function (olm_res) {
+      var olm_object = JSON.parse(olm_res.text);
+      if (program.json)
       {
-        var raw_image = Buffer.from(response.value, 'base64');
-
-        var bmp_data = { data:raw_image, width:320, height:240 };
-
-        var bmp_file = bmp(bmp_data);
-
-        fs.writeFileSync("tmp.bmp", bmp_file.data);
-
-        jimp.read('tmp.bmp')
-          .then(image => {
-            return image
-              .crop(0,65,290,110)
-              .write('tmp-cropped.bmp'); // save
-          })
-          .catch(err => {
-            console.error(err);
-          });
-      },
-      function(error)
+        var json_obj = { "olm" : olm_object};
+        console.info(JSON.stringify(json_obj, null, 2));
+      }
+      else
       {
-        console.log(error);
-      });
+        print_olm(olm_object, urn);
+      }
+    }, 
+    function (error) 
+    {
+      Helpers.displayError("getting olm object", error);
+    });
   })
   .parse(process.argv);
 

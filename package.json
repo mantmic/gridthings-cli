@@ -9,7 +9,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "start": "node swagger/generateSwagger.js && node api.js"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,10 @@
     "gtcli-console": "./console.js",
     "gtcli-olm": "./olm.js",
     "gtcli-olm-show": "./olm-show.js",
+    "gtcli-olm-flash": "./olm-flash.js",
+    "gtcli-olm-quality": "./olm-quality.js",
+    "gtcli-olm-crop": "./olm-crop.js",
+    "gtcli-olm-latest": "./olm-latest.js",
     "gtcli-blob": "./blob.js",
     "gtcli-blob-read": "./blob-read.js",
     "gtcli-blob-list": "./blob-list.js",
@@ -116,8 +121,7 @@
     "gtcli-command": "./command.js",
     "gtcli-command-show": "./command-show.js",
     "gtcli-command-push": "./command-push.js",
-    "gtcli-command-delete": "./command-delete.js",
-    "gtcli-login": "./login.js"
+    "gtcli-command-delete": "./command-delete.js"
   },
   "bugs": {
     "url": "https://github.com/ots-m2m/gridthings-cli/issues"
@@ -156,6 +160,7 @@
     "simpl-schema": "^1.3.0",
     "superagent": "^3.6.0",
     "swagger-jsdoc": "^3.2.3",
+    "swagger-ui-express": "^4.0.1",
     "winston": "^2.3.1",
     "ws": "^3.3.2"
   }
