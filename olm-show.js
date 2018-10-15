@@ -3,12 +3,6 @@
 var program = require('commander');
 var gtapi = require('./gt-api.js');
 var Helpers = require('./dred-helpers.js');
-<<<<<<< HEAD
-var defaults = require('./defaults.js');
-var bmp = require("./bmp-565.js");
-var jimp = require('jimp');
-=======
->>>>>>> 80e7dbe532f90b373aa2f0ceaa69025241b4b2a3
 
 var wrongArguments = true;
 
@@ -40,7 +34,9 @@ program
       gtapi.log_level = 1;
     }
 
-    gtapi.get_latest_value('30009/0/', urn, server, function (olm_res) {
+    gtapi.core_get('30009/0', urn, server, function (olm_res) {
+
+      console.log(olm_res.text);
       var olm_object = JSON.parse(olm_res.text);
       if (program.json)
       {
