@@ -279,15 +279,7 @@ sudo npm run api
 
 The docker repository for the gtcli api is 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
 
-To push an updated image to the repository run the following commands
-
-```
-cd gridthings-cli
-docker build -t gtapi .
-$(aws ecr get-login --region ap-southeast-2)
-docker tag gtapi 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
-docker push 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
-```
+This is updated via circleci, in branch feature/circle20
 
 ### Setup
 
