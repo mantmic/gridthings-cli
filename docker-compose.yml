@@ -13,6 +13,8 @@ services:
         environment:
           - MONGO_DATA_DIR=/data/db
           - MONGO_LOG_DIR=/dev/null
+        volumes:
+          - /data/db:/data/db
         networks:
           - gt
     mongo-seed:

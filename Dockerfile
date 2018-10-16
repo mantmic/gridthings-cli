@@ -12,6 +12,7 @@ RUN (npm install -g)
 
 RUN (openssl aes-256-cbc -d -in .gtcli.aes -k $gtcli_key >> .gtcli.tar)
 RUN (tar -xvf .gtcli.tar)
+RUN (cp -R .gtcli /root/.gtcli)
 
 EXPOSE 443
 
