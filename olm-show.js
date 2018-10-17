@@ -11,16 +11,43 @@ function print_olm(olm_object, urn)
   var olm_resources = {};
   olm_object.content.resources.map(function(i) { olm_resources[i.id] = i.value; });
 
+  var cam_name           = olm_resources[0];
+  var crop_X             = olm_resources[1];
+  var crop_Y             = olm_resources[2];
+  var crop_width         = olm_resources[3];
+  var crop_height        = olm_resources[4];
+  var jpeg_quality       = olm_resources[5];
+  var led_1_brightness   = olm_resources[6];
+  var led_2_brightness   = olm_resources[7];
+  var led_3_brightness   = olm_resources[8];
+
+
   console.info("Oil Level Monitor " + urn);
-  console.info("  Name:           " + olm_resources[0]);
-  console.info("  Crop X:         " + olm_resources[1]);
-  console.info("  Crop Y:         " + olm_resources[2]);
-  console.info("  Crop Width:     " + olm_resources[3]);
-  console.info("  Crop Height:    " + olm_resources[4]);
-  console.info("  JPEG Quality:   " + olm_resources[5]);
-  console.info("  LED 1:          " + olm_resources[6]);
-  console.info("  LED 2:          " + olm_resources[7]);
-  console.info("  LED 3:          " + olm_resources[8]);
+  console.info("  Name:           " + cam_name        );
+  console.info("  Crop X:         " + crop_X          );
+  console.info("  Crop Y:         " + crop_Y          );
+  console.info("  Crop Width:     " + crop_width      );
+  console.info("  Crop Height:    " + crop_height     );
+  console.info("  JPEG Quality:   " + jpeg_quality    );
+  console.info("  LED 1:          " + led_1_brightness);
+  console.info("  LED 2:          " + led_2_brightness);
+  console.info("  LED 3:          " + led_3_brightness);
+
+  if ((crop_width == 0) || (crop_width > 320))
+    console.info("WARN: Crop Width may be invalid");
+
+  if ((crop_height == 0 ) || (crop_height > 240))
+    console.info("WARN: Crop Height may be invalid");
+
+  if (crop_X + crop_width > 320)
+    console.info("WARN: Crop on x axis may be invalid");
+
+  if (crop_Y + crop_height > 240)
+    console.info("WARN: Crop on y axis may be invalid");
+
+  if ( (led_1_brightness > 100) ||  (led_2_brightness > 100) || (led_3_brightness > 100) )
+    console.info("WARN: LED brightness may be invalid");
+
 }
 
 program
@@ -29,7 +56,7 @@ program
   .option('-j, --json', 'Print repsonse as JSON')
   .action(function(urn, server) {
     wrongArguments = false;
-   
+
     if (program.verbose) {
       gtapi.log_level = 1;
     }
@@ -47,8 +74,8 @@ program
       {
         print_olm(olm_object, urn);
       }
-    }, 
-    function (error) 
+    },
+    function (error)
     {
       Helpers.displayError("getting olm object", error);
     });
