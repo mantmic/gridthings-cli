@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "mocha",
-    "start":"node swagger/generateSwagger.js && node api.js"
+    "start": "node swagger/generateSwagger.js && node api.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,11 @@
     "gtcli-console": "./console.js",
     "gtcli-olm": "./olm.js",
     "gtcli-olm-show": "./olm-show.js",
+    "gtcli-olm-flash": "./olm-flash.js",
+    "gtcli-olm-quality": "./olm-quality.js",
+    "gtcli-olm-crop": "./olm-crop.js",
+    "gtcli-olm-colour": "./olm-colour.js",
+    "gtcli-olm-latest": "./olm-latest.js",
     "gtcli-blob": "./blob.js",
     "gtcli-blob-read": "./blob-read.js",
     "gtcli-blob-list": "./blob-list.js",
@@ -141,6 +146,7 @@
     "express-ws": "^4.0.0",
     "hashids": "^1.1.1",
     "javascript-state-machine": "^3.1.0",
+    "jimp": "^0.5.3",
     "jsonwebtoken": "^8.3.0",
     "kinesis-streams": "^0.7.0",
     "lazy.js": "^0.5.0",
