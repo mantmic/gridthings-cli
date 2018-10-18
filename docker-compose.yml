@@ -27,7 +27,7 @@ services:
        depends_on:
         - mongo
     gtcli:
-        image: 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api
+        image: 337134270675.dkr.ecr.ap-southeast-2.amazonaws.com/gridthings/api:latest
         restart: always
         volumes:
           - ./certs:/gridthings-cli/certs:z
