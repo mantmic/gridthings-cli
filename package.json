@@ -26,6 +26,7 @@
     "gtcli-olm-flash": "./olm-flash.js",
     "gtcli-olm-quality": "./olm-quality.js",
     "gtcli-olm-crop": "./olm-crop.js",
+    "gtcli-olm-colour": "./olm-colour.js",
     "gtcli-olm-latest": "./olm-latest.js",
     "gtcli-blob": "./blob.js",
     "gtcli-blob-read": "./blob-read.js",
