@@ -31,7 +31,7 @@ function print_olm(olm_object, urn)
   var led_1_brightness   = olm_resources[6];
   var led_2_brightness   = olm_resources[7];
   var led_3_brightness   = olm_resources[8];
-  var color_mode   = olm_resources[9];
+  var color_mode         = olm_resources[9];
 
   console.info("Oil Level Monitor " + urn);
   console.info("  Name:           " + cam_name        );

@@ -20,8 +20,8 @@ program
     }
 
     var colour_int = 0;
-    if (colour == "colour") colour_int = 1;
-    else if (colour == "grey") colour_int = 3;
+    if (colour == "colour") colour_int = 3;
+    else if (colour == "grey") colour_int = 1;
     else
     {
       console.error("invalid colour specified");
